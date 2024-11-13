@@ -1,6 +1,9 @@
 // domain/models/Persona.java
 package domain.models;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class Persona {
     private String name;
     private String description;
@@ -11,9 +14,10 @@ public class Persona {
     private String about;
     private String stats;
     private String quote;
+    private ImageIcon avatar;
 
     // Constructor
-    public Persona(String name, String description, String favoriteFood, int age, String hometown, String hobby, String about, String stats, String quote) {
+    public Persona(String name, String description, String favoriteFood, int age, String hometown, String hobby, String about, String stats, String quote, ImageIcon avatar) {
         this.name = name;
         this.description = description;
         this.favoriteFood = favoriteFood;
@@ -23,6 +27,7 @@ public class Persona {
         this.about = about;
         this.stats = stats;
         this.quote = quote;
+        this.avatar = avatar;
     }
 
     // Getters and Setters
@@ -59,5 +64,9 @@ public class Persona {
 
     public String getQuote() {
         return quote;
+    }
+
+    public ImageIcon getAvatar() {
+        return avatar;
     }
 }

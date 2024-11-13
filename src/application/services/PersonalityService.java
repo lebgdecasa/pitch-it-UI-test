@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class PersonalityService {
     private static PersonalityService instance;
-    private List<Personality> personalities;
+    private final List<Personality> personalities;
 
     private PersonalityService() {
         personalities = new ArrayList<>();

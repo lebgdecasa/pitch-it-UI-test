@@ -34,32 +34,33 @@ public class PersonasListPage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Main panel with absolute layout
-        JPanel mainPanel = new JPanel(null);
+        // Main panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
+
+        // Header Panel
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setBackground(Color.WHITE);
 
         // Load logo image
         URL logoUrl = getClass().getResource("/pitch-t-logo.png");
         ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(logoUrl));
         JLabel logoLabel = new JLabel(logoIcon);
-        logoLabel.setBounds(93, 17, 383, 135);
-        mainPanel.add(logoLabel);
-
-        // HamburgerMenu
-        HamburgerMenu hamburgerMenu = new HamburgerMenu();
-        hamburgerMenu.setBounds(162, 153, 100, 50); // Adjust size as needed
-        mainPanel.add(hamburgerMenu);
 
         // "Personas" Title
         JLabel titleLabel = new JLabel("Personas");
         titleLabel.setFont(new Font("Inter", Font.BOLD, 64));
-        titleLabel.setBounds(282, 156, 400, 70);
-        mainPanel.add(titleLabel);
 
-        // Back Button
-        Button backButton = new Button("Back");
-        backButton.setBounds(84, 807, 200, 75);
-        mainPanel.add(backButton);
+        // HamburgerMenu
+        HamburgerMenu hamburgerMenu = new HamburgerMenu();
+
+        // Add components to headerPanel
+        headerPanel.add(logoLabel);
+        headerPanel.add(hamburgerMenu);
+        headerPanel.add(titleLabel);
+
+        // Add header panel to main panel
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         // Personas List Panel
         JPanel personasPanel = new JPanel();
@@ -77,8 +78,9 @@ public class PersonasListPage extends JFrame {
 
             // Add action listener for info button
             personaTab.addInfoButtonListener(e -> {
-                // Navigate to Persona Detail Page (to be implemented)
-                PersonaPage personaPage = new PersonaPage(persona, currentPitch);
+                // Navigate to Persona Detail Page
+                dispose();
+                PersonaPage personaPage = new PersonaPage(persona, currentPitch, true);
                 personaPage.setVisible(true);
             });
 
@@ -88,19 +90,39 @@ public class PersonasListPage extends JFrame {
 
         // Scroll Pane
         JScrollPane scrollPane = new JScrollPane(personasPanel);
-        scrollPane.setBounds(85, 274, 1304, 500);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainPanel.add(scrollPane);
+
+        // Center Panel for Content
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Add center panel to main panel
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Footer Panel
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        footerPanel.setBackground(Color.WHITE);
+
+        // "Back" Button
+        Button backButton = new Button("Back");
 
         // "Compare" Button
         Button compareButton = new Button("Compare");
-        compareButton.setBounds(526, 807, 200, 75);
-        mainPanel.add(compareButton);
 
         // "Chat" Button
         Button chatButton = new Button("Chat");
-        chatButton.setBounds(968, 807, 200, 75);
-        mainPanel.add(chatButton);
+
+        // Add buttons to footer panel
+        footerPanel.add(backButton);
+        footerPanel.add(compareButton);
+        footerPanel.add(chatButton);
+
+        // Add footer panel to main panel
+        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+
+        // Set the main panel as the content pane
+        setContentPane(mainPanel);
 
         // Action Listeners
         backButton.addActionListener(e -> {
@@ -116,8 +138,14 @@ public class PersonasListPage extends JFrame {
                 JOptionPane.showMessageDialog(this, "Please select at least two personas to compare.", "Selection Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Navigate to Compare Personas Page (to be implemented)
-            JOptionPane.showMessageDialog(this, "Compare Personas functionality not implemented yet.");
+            if (selectedPersonas.size() > 2) {
+                JOptionPane.showMessageDialog(this, "Please select only two personas to compare.", "Selection Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Navigate to ComparePersonasPage
+            dispose();
+            ComparePersonasPage comparePage = new ComparePersonasPage(selectedPersonas.get(0), selectedPersonas.get(1), currentPitch);
+            comparePage.setVisible(true);
         });
 
         chatButton.addActionListener(e -> {
@@ -129,9 +157,6 @@ public class PersonasListPage extends JFrame {
             // Navigate to Chat Page with selected persona (to be implemented)
             JOptionPane.showMessageDialog(this, "Chat functionality not implemented yet.");
         });
-
-        // Add main panel to the frame
-        add(mainPanel);
     }
 
     private List<Persona> getSelectedPersonas() {
