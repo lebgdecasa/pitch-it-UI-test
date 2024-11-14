@@ -3,16 +3,12 @@ package ui;
 
 import ui.components.Button;
 import ui.components.HamburgerMenu;
-import ui.components.Size48;
-
 import domain.models.Pitch;
 import application.services.PitchService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
-import java.util.Objects;
 
 public class ProjectPage extends JFrame {
 
@@ -26,95 +22,150 @@ public class ProjectPage extends JFrame {
     private void initializeUI() {
         // Frame settings
         setTitle("Pitch!t - Project");
-        setSize(1440, 1024);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Main panel with absolute layout
-        JPanel mainPanel = new JPanel(null);
+        // Main panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
 
+        // Header Panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.WHITE);
+
+        // Logo Panel
+        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoPanel.setBackground(Color.WHITE);
+
         // Load logo image
-        URL logoUrl = getClass().getResource("/pitch-t-logo.png");
-        ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(logoUrl));
+        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
         JLabel logoLabel = new JLabel(logoIcon);
-        logoLabel.setBounds(93, 17, 383, 135);
-        mainPanel.add(logoLabel);
+        logoPanel.add(logoLabel);
 
-        // HamburgerMenu
-        HamburgerMenu hamburgerMenu = new HamburgerMenu();
-        hamburgerMenu.setBounds(162, 153, 100, 50); // Adjust size as needed
-        mainPanel.add(hamburgerMenu);
-
-        // Project Title (Pitch Name)
+        // Title Label
         JLabel titleLabel = new JLabel(pitch.getName());
-        titleLabel.setFont(new Font("Inter", Font.BOLD, 64));
-        titleLabel.setBounds(282, 156, 600, 70);
-        mainPanel.add(titleLabel);
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
 
-        // Image Frame (frame-3.svg placeholder)
+        // Hamburger Menu
+        HamburgerMenu hamburgerMenu = new HamburgerMenu() {
+            @Override
+            protected void navigateToDashboard() {
+                dispose();
+                DashboardPage dashboardPage = new DashboardPage();
+                dashboardPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToNewPitch() {
+                dispose();
+                NewPitchPage newPitchPage = new NewPitchPage();
+                newPitchPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToPersonalities() {
+                dispose();
+                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
+                personalitiesPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToAccountSettings() {
+                dispose();
+                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
+                accountSettingsPage.setVisible(true);
+            }
+        };
+
+        // Add components to header panel
+        headerPanel.add(logoPanel, BorderLayout.WEST);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Content Panel
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        contentPanel.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20);
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // Image Panel
         JPanel imagePanel = new JPanel();
-        imagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
-        imagePanel.setBounds(84, 282, 569, 292);
-        // If you have a background image, set it here
-        mainPanel.add(imagePanel);
+        imagePanel.setBackground(Color.LIGHT_GRAY);
+        imagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+
+        // If you have an image for the pitch, you can display it here
+        // For now, we'll use a placeholder
+        JLabel imageLabel = new JLabel("Image Placeholder", SwingConstants.CENTER);
+        imageLabel.setFont(new Font("Inter", Font.PLAIN, 24));
+        imagePanel.add(imageLabel);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridheight = 2;
+        gbc.weightx = 0.5;
+        gbc.weighty = 1.0;
+        contentPanel.add(imagePanel, gbc);
 
         // Description Panel
-        JPanel descriptionPanel = new JPanel();
-        descriptionPanel.setLayout(new BorderLayout());
-        descriptionPanel.setBounds(84, 609, 569, 284);
+        JTextArea descriptionTextArea = new JTextArea("Description\n" + pitch.getDescription());
+        descriptionTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
+        descriptionTextArea.setLineWrap(true);
+        descriptionTextArea.setWrapStyleWord(true);
+        descriptionTextArea.setEditable(false);
+        JScrollPane descriptionScrollPane = new JScrollPane(descriptionTextArea);
 
-        JLabel descriptionLabel = new JLabel();
-        descriptionLabel.setFont(new Font("Inter", Font.PLAIN, 24));
-        descriptionLabel.setText("<html><b>Description<br></b>" + pitch.getDescription() + "</html>");
-        descriptionLabel.setVerticalAlignment(JLabel.TOP);
-
-        descriptionPanel.add(descriptionLabel, BorderLayout.CENTER);
-        mainPanel.add(descriptionPanel);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridheight = 1;
+        gbc.weighty = 0.5;
+        contentPanel.add(descriptionScrollPane, gbc);
 
         // Target Audience Panel
-        JPanel audiencePanel = new JPanel();
-        audiencePanel.setLayout(new BorderLayout());
-        audiencePanel.setBounds(720, 282, 405, 292);
+        JTextArea audienceTextArea = new JTextArea("Target Audience Analysis\n" + pitch.getTargetAudience());
+        audienceTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
+        audienceTextArea.setLineWrap(true);
+        audienceTextArea.setWrapStyleWord(true);
+        audienceTextArea.setEditable(false);
+        JScrollPane audienceScrollPane = new JScrollPane(audienceTextArea);
 
-        JLabel audienceLabel = new JLabel();
-        audienceLabel.setFont(new Font("Inter", Font.PLAIN, 24));
-        audienceLabel.setText("<html><b>Target Audience Analysis</b><br>" + pitch.getTargetAudience() + "</html>");
-        audienceLabel.setVerticalAlignment(JLabel.TOP);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridheight = 3;
+        gbc.weightx = 0.5;
+        gbc.weighty = 1.0;
+        contentPanel.add(audienceScrollPane, gbc);
 
-        audiencePanel.add(audienceLabel, BorderLayout.CENTER);
-        mainPanel.add(audiencePanel);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Footer Panel
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        footerPanel.setBackground(Color.WHITE);
 
         // Edit Button
         JButton editButton = new JButton("Edit");
-        editButton.setFont(new Font("Inter", Font.PLAIN, 32));
-        URL editIconUrl = getClass().getResource("/edit.png");
-        if (editIconUrl != null) {
-            editButton.setIcon(new ImageIcon(editIconUrl));
+        editButton.setFont(new Font("Inter", Font.PLAIN, 24));
+        ImageIcon editIcon = new ImageIcon(getClass().getResource("/edit.png"));
+        if (editIcon != null) {
+            editButton.setIcon(editIcon);
         }
-        editButton.setBounds(1205, 152, 150, 94);
-        mainPanel.add(editButton);
+        footerPanel.add(editButton);
 
         // View Personas Button
         Button viewPersonasButton = new Button("View Personas");
-        viewPersonasButton.setBounds(820, 609, 420, 75);
-        mainPanel.add(viewPersonasButton);
-        viewPersonasButton.addActionListener((ActionEvent e) -> {
-            // Navigate to PersonasListPage
-            dispose();
-            PersonasListPage personasListPage = new PersonasListPage(pitch);
-            personasListPage.setVisible(true);
-        });
+        footerPanel.add(viewPersonasButton);
 
         // Ask Personalities Button
         Button askPersonalitiesButton = new Button("Ask Personalities");
-        askPersonalitiesButton.setBounds(820, 708, 420, 75);
-        mainPanel.add(askPersonalitiesButton);
+        footerPanel.add(askPersonalitiesButton);
 
         // Back Button
         Button backButton = new Button("Back");
-        backButton.setBounds(821, 812, 420, 75);
-        mainPanel.add(backButton);
+        footerPanel.add(backButton);
 
         // Action Listeners
         editButton.addActionListener((ActionEvent e) -> {
@@ -122,9 +173,18 @@ public class ProjectPage extends JFrame {
             JOptionPane.showMessageDialog(this, "Edit functionality not implemented yet.");
         });
 
+        viewPersonasButton.addActionListener((ActionEvent e) -> {
+            // Navigate to PersonasListPage
+            dispose();
+            PersonasListPage personasListPage = new PersonasListPage(pitch);
+            personasListPage.setVisible(true);
+        });
+
         askPersonalitiesButton.addActionListener((ActionEvent e) -> {
-            // Navigate to Ask Personalities Page (to be implemented)
-            JOptionPane.showMessageDialog(this, "Ask Personalities functionality not implemented yet.");
+            // Navigate to PersonalitiesPage, passing the pitch
+            dispose();
+            PersonalitiesPage personalitiesPage = new PersonalitiesPage();
+            personalitiesPage.setVisible(true);
         });
 
         backButton.addActionListener((ActionEvent e) -> {
@@ -134,7 +194,9 @@ public class ProjectPage extends JFrame {
             dashboardPage.setVisible(true);
         });
 
-        // Add main panel to the frame
-        add(mainPanel);
+        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+
+        // Set main panel as content pane
+        setContentPane(mainPanel);
     }
 }

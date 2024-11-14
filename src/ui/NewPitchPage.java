@@ -10,8 +10,6 @@ import ui.components.HamburgerMenu;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.net.URL;
-import java.util.Objects;
 
 public class NewPitchPage extends JFrame {
 
@@ -25,108 +23,139 @@ public class NewPitchPage extends JFrame {
     private void initializeUI() {
         // Frame settings
         setTitle("Pitch!t - New Pitch");
-        setSize(1440, 1024);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Main panel with absolute layout
-        JPanel mainPanel = new JPanel(null);
+        // Main panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
 
+        // Header Panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.WHITE);
+
+        // Logo Panel
+        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoPanel.setBackground(Color.WHITE);
+
         // Load logo image
-        URL logoUrl = getClass().getResource("/pitch-t-logo.png");
-        ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(logoUrl));
+        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
         JLabel logoLabel = new JLabel(logoIcon);
-        logoLabel.setBounds(93, 17, 383, 135);
-        mainPanel.add(logoLabel);
+        logoPanel.add(logoLabel);
 
-        // HamburgerMenu
-        HamburgerMenu hamburgerMenu = new HamburgerMenu();
-        hamburgerMenu.setBounds(162, 153, 100, 50); // Adjust size as needed
-        mainPanel.add(hamburgerMenu);
+        // Hamburger Menu
+        HamburgerMenu hamburgerMenu = new HamburgerMenu() {
+            @Override
+            protected void navigateToDashboard() {
+                dispose();
+                DashboardPage dashboardPage = new DashboardPage();
+                dashboardPage.setVisible(true);
+            }
 
-        // "New Pitch" Title
-        JLabel newPitchTitle = new JLabel("New Pitch");
-        newPitchTitle.setFont(new Font("Inter", Font.BOLD, 64));
-        newPitchTitle.setBounds(302, 160, 400, 70);
-        mainPanel.add(newPitchTitle);
+            @Override
+            protected void navigateToNewPitch() {
+                // Already on NewPitchPage
+            }
+
+            @Override
+            protected void navigateToPersonalities() {
+                dispose();
+                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
+                personalitiesPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToAccountSettings() {
+                dispose();
+                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
+                accountSettingsPage.setVisible(true);
+            }
+        };
+        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
+        headerPanel.add(logoPanel, BorderLayout.WEST);
+
+        // Title Label
+        JLabel titleLabel = new JLabel("New Pitch");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Content Panel
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        contentPanel.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 20, 10, 20); // Padding around components
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
 
         // "Enter Name:" Label
         JLabel nameLabel = new JLabel("Enter Name:");
-        nameLabel.setFont(new Font("Inter", Font.PLAIN, 48));
-        nameLabel.setBounds(69, 278, 400, 50);
-        mainPanel.add(nameLabel);
+        nameLabel.setFont(new Font("Inter", Font.PLAIN, 24));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        contentPanel.add(nameLabel, gbc);
 
         // Name InputField
         nameField = new InputField();
-        nameField.setBounds(70, 353, 494, 40);
-        mainPanel.add(nameField);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        contentPanel.add(nameField, gbc);
 
         // "Describe Project:" Label
         JLabel descriptionLabel = new JLabel("Describe Project:");
-        descriptionLabel.setFont(new Font("Inter", Font.PLAIN, 48));
-        descriptionLabel.setBounds(70, 465, 400, 50);
-        mainPanel.add(descriptionLabel);
+        descriptionLabel.setFont(new Font("Inter", Font.PLAIN, 24));
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0;
+        contentPanel.add(descriptionLabel, gbc);
 
         // Description TextAreaField
         descriptionField = new TextAreaField();
-        descriptionField.setBounds(64, 540, 1270, 248);
-        mainPanel.add(descriptionField);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        contentPanel.add(descriptionField, gbc);
+
+        // Button Panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setBackground(Color.WHITE);
 
         // "Upload Image" Button
         JButton uploadImageButton = new JButton("Upload Image");
-        uploadImageButton.setFont(new Font("Inter", Font.PLAIN, 48));
+        uploadImageButton.setFont(new Font("Inter", Font.PLAIN, 24));
         uploadImageButton.setBackground(new Color(0xECECEC));
         uploadImageButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         uploadImageButton.setFocusPainted(false);
-        uploadImageButton.setBounds(832, 337, 400, 80);
 
         // Add Icon to the button (optional)
-        URL iconUrl = getClass().getResource("/paperclip.png");
-        if (iconUrl != null) {
-            ImageIcon icon = new ImageIcon(iconUrl);
+        ImageIcon icon = new ImageIcon(getClass().getResource("/paperclip.png"));
+        if (icon != null) {
             uploadImageButton.setIcon(icon);
         }
-        mainPanel.add(uploadImageButton);
+        buttonPanel.add(uploadImageButton);
 
         // "Generate Pitch" Button
         JButton generatePitchButton = new JButton("Generate Pitch");
-        generatePitchButton.setFont(new Font("Inter", Font.PLAIN, 48));
+        generatePitchButton.setFont(new Font("Inter", Font.PLAIN, 24));
         generatePitchButton.setBackground(new Color(0xECECEC));
         generatePitchButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         generatePitchButton.setFocusPainted(false);
-        generatePitchButton.setBounds(248, 850, 420, 75);
-        mainPanel.add(generatePitchButton);
-        generatePitchButton.addActionListener((ActionEvent e) -> {
-            String name = nameField.getText();
-            String description = descriptionField.getText();
-
-            if (name.isEmpty() || description.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Name and Description are required.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Create a new Pitch object
-            Pitch newPitch = new Pitch(name, description, null); // Handle image as needed
-
-            // Add to PitchService
-            PitchService pitchService = PitchService.getInstance();
-            pitchService.addPitch(newPitch);
-
-            // Navigate to ProjectPage
-            dispose();
-            ProjectPage projectPage = new ProjectPage(newPitch);
-            projectPage.setVisible(true);
-        });
+        buttonPanel.add(generatePitchButton);
 
         // "Cancel" Button
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.setFont(new Font("Inter", Font.PLAIN, 48));
+        cancelButton.setFont(new Font("Inter", Font.PLAIN, 24));
         cancelButton.setBackground(new Color(0xECECEC));
         cancelButton.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         cancelButton.setFocusPainted(false);
-        cancelButton.setBounds(848, 850, 420, 75);
-        mainPanel.add(cancelButton);
+        buttonPanel.add(cancelButton);
 
         // Add action listeners
         generatePitchButton.addActionListener((ActionEvent e) -> {
@@ -145,10 +174,10 @@ public class NewPitchPage extends JFrame {
             PitchService pitchService = PitchService.getInstance();
             pitchService.addPitch(newPitch);
 
-            // Navigate back to DashboardPage
+            // Navigate to ProjectPage
             dispose();
-            DashboardPage dashboardPage = new DashboardPage();
-            dashboardPage.setVisible(true);
+            ProjectPage projectPage = new ProjectPage(newPitch);
+            projectPage.setVisible(true);
         });
 
         cancelButton.addActionListener((ActionEvent e) -> {
@@ -170,7 +199,17 @@ public class NewPitchPage extends JFrame {
             }
         });
 
-        // Add main panel to the frame
-        add(mainPanel);
+        // Add content and button panels to the main panel
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        contentPanel.add(buttonPanel, gbc);
+
+        // Add content panel to main panel
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Set main panel as content pane
+        setContentPane(mainPanel);
     }
 }

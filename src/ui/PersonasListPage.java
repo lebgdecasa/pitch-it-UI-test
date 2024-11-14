@@ -52,11 +52,40 @@ public class PersonasListPage extends JFrame {
         titleLabel.setFont(new Font("Inter", Font.BOLD, 64));
 
         // HamburgerMenu
-        HamburgerMenu hamburgerMenu = new HamburgerMenu();
+        HamburgerMenu hamburgerMenu = new HamburgerMenu() {
+            @Override
+            protected void navigateToDashboard() {
+                dispose();
+                DashboardPage dashboardPage = new DashboardPage();
+                dashboardPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToNewPitch() {
+                dispose();
+                NewPitchPage newPitchPage = new NewPitchPage();
+                newPitchPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToPersonalities() {
+                dispose();
+                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
+                personalitiesPage.setVisible(true);
+            }
+
+            @Override
+            protected void navigateToAccountSettings() {
+                dispose();
+                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
+                accountSettingsPage.setVisible(true);
+            }
+        };
+        headerPanel.add(hamburgerMenu, BorderLayout.WEST);
 
         // Add components to headerPanel
         headerPanel.add(logoLabel);
-        headerPanel.add(hamburgerMenu);
+
         headerPanel.add(titleLabel);
 
         // Add header panel to main panel
@@ -80,8 +109,21 @@ public class PersonasListPage extends JFrame {
             personaTab.addInfoButtonListener(e -> {
                 // Navigate to Persona Detail Page
                 dispose();
+
+                // Create a new JFrame to hold the PersonaPage panel
+                JFrame frame = new JFrame("Persona Details");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                frame.setLocationRelativeTo(null);
+
+                // Create the PersonaPage panel
                 PersonaPage personaPage = new PersonaPage(persona, currentPitch, true);
-                personaPage.setVisible(true);
+
+                // Add the panel to the frame
+                frame.setContentPane(personaPage);
+
+                // Display the frame
+                frame.setVisible(true);
             });
 
             personasPanel.add(personaTab);
@@ -154,8 +196,12 @@ public class PersonasListPage extends JFrame {
                 JOptionPane.showMessageDialog(this, "Please select one persona to chat with.", "Selection Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Navigate to Chat Page with selected persona (to be implemented)
-            JOptionPane.showMessageDialog(this, "Chat functionality not implemented yet.");
+            // Navigate to PersonaChatPage with selected persona
+            dispose();
+
+            // Create and display the PersonaChatPage
+            PersonaChatPage chatPage = new PersonaChatPage(selectedPersonas.get(0), currentPitch);
+            chatPage.setVisible(true);
         });
     }
 

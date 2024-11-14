@@ -37,15 +37,22 @@ public class ComparePersonasPage extends JFrame {
         mainPanel.setBackground(Color.WHITE);
 
         // Header Panel
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);
 
-        // Logo
+// Logo Panel
+        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoPanel.setBackground(Color.WHITE);
+
+// Logo
         ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
         JLabel logoLabel = new JLabel(logoIcon);
-        headerPanel.add(logoLabel);
+        logoPanel.add(logoLabel);
 
-        // Hamburger Menu
+// Add logo panel to the header
+        headerPanel.add(logoPanel, BorderLayout.WEST);
+
+// Hamburger Menu
         HamburgerMenu hamburgerMenu = new HamburgerMenu() {
             @Override
             protected void navigateToDashboard() {
@@ -69,19 +76,26 @@ public class ComparePersonasPage extends JFrame {
             }
 
             @Override
-            protected void logout() {
+            protected void navigateToAccountSettings() {
                 dispose();
-                LandingPage landingPage = new LandingPage();
-                landingPage.setVisible(true);
+                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
+                accountSettingsPage.setVisible(true);
             }
         };
-        headerPanel.add(hamburgerMenu);
+        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
+
+// Title Label (optional)
+        JLabel titleLabel = new JLabel("Compare Personas");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
 
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
         // Center Panel
-        JPanel centerPanel = new JPanel(new GridLayout(1, 2)); // Two columns for two personas
+        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // Adds horizontal spacing between panels
         centerPanel.setBackground(Color.WHITE);
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Adds padding around the panel
 
         // Persona Panels
         PersonaPanel personaPanel1 = new PersonaPanel(persona1, currentPitch);

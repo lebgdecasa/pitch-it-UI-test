@@ -30,7 +30,7 @@ public class PersonaPanel extends JPanel {
         headerPanel.setBackground(Color.WHITE);
 
         JLabel nameLabel = new JLabel(persona.getName());
-        nameLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        nameLabel.setFont(new Font("Inter", Font.BOLD, 24));
 
         JButton infoButton = new JButton("Info");
         infoButton.addActionListener(e -> {
@@ -60,7 +60,7 @@ public class PersonaPanel extends JPanel {
         add(imageLabel, BorderLayout.CENTER);
 
         // GPT Output Panel
-        JTextArea gptOutputArea = new JTextArea();
+        JTextArea gptOutputArea = new JTextArea(getGPTResponse());
         gptOutputArea.setLineWrap(true);
         gptOutputArea.setWrapStyleWord(true);
         gptOutputArea.setEditable(false);

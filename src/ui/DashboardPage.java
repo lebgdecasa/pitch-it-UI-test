@@ -12,10 +12,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 import java.util.Objects;
-import java.util.List;
-import java.util.ArrayList;
 
 public class DashboardPage extends JFrame {
 
@@ -26,22 +23,28 @@ public class DashboardPage extends JFrame {
     private void initializeUI() {
         // Frame settings
         setTitle("Pitch!t - Dashboard");
-        setSize(1440, 1024);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Main panel with absolute layout
-        JPanel mainPanel = new JPanel(null);
+        // Main panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
 
-        // Load logo image
-        URL logoUrl = getClass().getResource("/pitch-t-logo.png");
-        ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(logoUrl));
-        JLabel logoLabel = new JLabel(logoIcon);
-        logoLabel.setBounds(93, 17, 383, 135);
-        mainPanel.add(logoLabel);
+        // Header Panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.WHITE);
 
-        // HamburgerMenu
+        // Logo Panel
+        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoPanel.setBackground(Color.WHITE);
+
+        // Load logo image
+        ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/pitch-t-logo.png")));
+        JLabel logoLabel = new JLabel(logoIcon);
+        logoPanel.add(logoLabel);
+
+        // Hamburger Menu
         HamburgerMenu hamburgerMenu = new HamburgerMenu() {
             @Override
             protected void navigateToDashboard() {
@@ -63,45 +66,62 @@ public class DashboardPage extends JFrame {
             }
 
             @Override
-            protected void logout() {
+            protected void navigateToAccountSettings() {
                 dispose();
-                LandingPage landingPage = new LandingPage();
-                landingPage.setVisible(true);
+                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
+                accountSettingsPage.setVisible(true);
             }
+
         };
-        hamburgerMenu.setBounds(10, 10, 50, 50);
-        mainPanel.add(hamburgerMenu);
+        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
+        headerPanel.add(logoPanel, BorderLayout.WEST);
+
+        // Title Label
+        JLabel titleLabel = new JLabel("Dashboard");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Content Panel
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+
+        // Button Panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 20));
+        buttonPanel.setBackground(Color.WHITE);
 
         // PitchButton (New Pitch)
         PitchButton newPitchButton = new PitchButton("New Pitch");
-        newPitchButton.setBounds(296, 153, 150, 50);
-        mainPanel.add(newPitchButton);
+        newPitchButton.setPreferredSize(new Dimension(200, 50));
         newPitchButton.addActionListener((ActionEvent e) -> {
             dispose();
             NewPitchPage newPitchPage = new NewPitchPage();
             newPitchPage.setVisible(true);
         });
-
+        buttonPanel.add(newPitchButton);
 
         // PitchButton (Ask Personalities)
         PitchButton askPersonalitiesButton = new PitchButton("Ask Personalities");
-        askPersonalitiesButton.setBounds(613, 152, 727, 50);
-        mainPanel.add(askPersonalitiesButton);
+        askPersonalitiesButton.setPreferredSize(new Dimension(200, 50));
         askPersonalitiesButton.addActionListener(e -> {
             dispose();
             PersonalitiesPage personalitiesPage = new PersonalitiesPage();
             personalitiesPage.setVisible(true);
         });
+        buttonPanel.add(askPersonalitiesButton);
+
+        contentPanel.add(buttonPanel, BorderLayout.NORTH);
 
         // Pitch History Panel
         JPanel pitchHistoryPanel = new JPanel();
         pitchHistoryPanel.setLayout(new BoxLayout(pitchHistoryPanel, BoxLayout.Y_AXIS));
-        pitchHistoryPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         pitchHistoryPanel.setBackground(Color.WHITE);
-        pitchHistoryPanel.setBounds(70, 281, 1270, 708);
-        // After setting up pitchHistoryPanel
+
+        // Fetch pitches from PitchService
         PitchService pitchService = PitchService.getInstance();
-        List<Pitch> pitches = pitchService.getAllPitches();
+        java.util.List<Pitch> pitches = pitchService.getAllPitches();
 
         for (Pitch pitch : pitches) {
             ContentTab tab = new ContentTab(pitch.getName());
@@ -111,33 +131,20 @@ public class DashboardPage extends JFrame {
                     dispose();
                     ProjectPage projectPage = new ProjectPage(pitch);
                     projectPage.setVisible(true);
-                    }
-                });
-            // Optionally add action listeners to each tab
+                }
+            });
             pitchHistoryPanel.add(tab);
         }
 
-
-        // ContentTabs
-        ContentTab tab1 = new ContentTab("Facebook for Cats");
-        ContentTab tab2 = new ContentTab("Time-traveling socks");
-        ContentTab tab3 = new ContentTab("Potato that peels itself");
-        ContentTab tab4 = new ContentTab("App to pitch projects to AI Personas");
-
-        pitchHistoryPanel.add(tab1);
-        pitchHistoryPanel.add(tab2);
-        pitchHistoryPanel.add(tab3);
-        pitchHistoryPanel.add(tab4);
-
-        mainPanel.add(pitchHistoryPanel);
-
-        // Scroll Bar (if needed)
+        // Scroll Pane for Pitch History
         JScrollPane scrollPane = new JScrollPane(pitchHistoryPanel);
-        scrollPane.setBounds(70, 281, 1270, 708);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        mainPanel.add(scrollPane);
 
-        // Add main panel to the frame
-        add(mainPanel);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Set main panel as content pane
+        setContentPane(mainPanel);
     }
 }
