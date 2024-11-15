@@ -168,7 +168,12 @@ public class NewPitchPage extends JFrame {
             }
 
             // Create a new Pitch object
-            Pitch newPitch = new Pitch(name, description, null); // Image handling can be added later
+            Pitch newPitch = null; // Image handling can be added later
+            try {
+                newPitch = new Pitch(name, description, null);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
 
             // Add to PitchService
             PitchService pitchService = PitchService.getInstance();

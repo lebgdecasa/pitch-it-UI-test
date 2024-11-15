@@ -1,6 +1,8 @@
 // domain/models/Pitch.java
 package domain.models;
 
+import application.services.AudienceAnalyzer;
+
 import java.awt.Image;
 
 public class Pitch {
@@ -8,14 +10,16 @@ public class Pitch {
     private final String description;
     private final Image image;
     private String targetAudience;
+    private String detailedTA;
     // You can use a different type if preferred
 
     // Constructor
-    public Pitch(String name, String description, Image image) {
+    public Pitch(String name, String description, Image image) throws Exception {
         this.name = name;
         this.description = description;
         this.image = image;
-        this.targetAudience = "Foodies - 25%\nSnack Enthusiasts - 20%\nPickle Lovers - 25%\nHealth-Conscious - 15%\nMichelin Inspectors - 15%";
+        this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
+        this.detailedTA = AudienceAnalyzer.detailedTA(name + description);
     }
 
     // Getters
@@ -35,8 +39,10 @@ public class Pitch {
         return targetAudience;
     }
 
-    public void setTargetAudience(String targetAudience) {
-        this.targetAudience = targetAudience;
+    public String getDetailedTA() {return detailedTA;}
+
+    public void setTargetAudience() throws Exception {
+        this.targetAudience = AudienceAnalyzer.analyzeAudience(name);
     }
     // Setters (if needed)
 }
