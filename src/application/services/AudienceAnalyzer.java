@@ -47,7 +47,7 @@ public class AudienceAnalyzer {
      */
     public static String analyzeAudience(String userMessage) throws Exception {
         // Define the system message
-        String systemMessage = "in less than 15 words, give me the target audience's age, gender, and hobby preferences";
+        String systemMessage = "in less than 15 words, give me the target audience's age, gender, and hobby preferences and instead of commas do a newline";
         // Call getResponse method from chatgptapi and return the response
         String jsonResponse = chatgptapi.getResponse(userMessage, systemMessage);
         return ChatHelper.extractContent(jsonResponse);
