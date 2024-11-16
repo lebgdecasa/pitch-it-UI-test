@@ -23,17 +23,17 @@ public class PersonalityService {
         ));
         personalities.add(new Personality(
                 "Elena Romero",
-                "A seasoned investor.",
+                "Elena Romero is a sustainable investing advocate and former Silicon Valley venture capitalist. She built her wealth through early investments in green technology and renewable energy. Thoughtful and idealistic, Elena values business ideas with environmental and societal impact. In pitches, she urges founders to consider sustainability, aligning her support with projects that prioritize ethical practices and long-term positive change.",
                 new ImageIcon(Objects.requireNonNull(getClass().getResource("/elena-romero.png")))
         ));
         personalities.add(new Personality(
                 "Raj Patel",
-                "A tech guru.",
+                "Raj Patel is a fintech pioneer who founded a leading digital payment platform, transforming the way we transact online. Known for his calm, analytical approach, Raj focuses on data, scalability, and clear profitability. He values pitches with strong financial foundations and realistic growth models, offering insightful feedback and investment if the numbers show real promise. Raj is precise, calculated, and driven by logical assessment.",
                 new ImageIcon(Objects.requireNonNull(getClass().getResource("/raj-patel.png")))
         ));
         personalities.add(new Personality(
                 "Jensen Huang",
-                "A marketing expert.",
+                "Jensen Huang is the visionary founder and CEO of NVIDIA, a company that revolutionized graphics processing and artificial intelligence. Known for his innovative mindset and strategic brilliance, Jensen thrives on cutting-edge technology and ambitious ideas. In pitches, he seeks projects with groundbreaking potential, focusing on tech-driven scalability and real-world impact. Analytical yet inspiring, he values bold visions backed by solid technical foundations.",
                 new ImageIcon(Objects.requireNonNull(getClass().getResource("/jensen-huang.png")))
         ));
     }

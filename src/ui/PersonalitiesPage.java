@@ -242,7 +242,6 @@ public class PersonalitiesPage extends JFrame {
     private void selectPersonality(Personality personality) {
         this.selectedPersonality = personality;
         // Update UI to show selected personality
-        // Update avatar and name
         avatarLabel.setIcon(scaleImageIcon(personality.getAvatar(), 64, 64));
         nameLabel.setText(personality.getName());
 
@@ -250,6 +249,18 @@ public class PersonalitiesPage extends JFrame {
         chatArea.setText("");
         chatHistoryModel.clear();
         chatService = new ChatService(); // Reset chat service
+
+        // Set system message with personality description
+        String systemMessage = "You are " + personality.getName() + ". " + personality.getDescription() + "You must answer the user exactly the same way as the personality you incarnate";
+        chatService.setSystemMessage(systemMessage);
+
+        // Display welcome message from the personality
+        String welcomeMessage = "Hello! I'm " + personality.getName() + ". How can I assist you today?";
+        chatArea.append(personality.getName() + ": " + welcomeMessage + "\n");
+
+        // Add welcome message to chat history
+        ChatMessage welcomeMsg = new ChatMessage(personality.getName(), welcomeMessage);
+        chatService.addMessage(welcomeMsg);
     }
 
     private void sendMessage(String messageText) {
@@ -265,14 +276,46 @@ public class PersonalitiesPage extends JFrame {
         // Add user's message to chat area
         chatArea.append("You: " + messageText + "\n");
 
-        // Send message and get response
-        ChatMessage responseMessage = chatService.sendMessage(messageText, selectedPersonality.getName());
+        // Disable input to prevent multiple submissions
+        chatBar.getSendButton().setEnabled(false);
+        chatBar.getInputField().setEditable(false);
 
-        // Add personality's response to chat area
-        chatArea.append(selectedPersonality.getName() + ": " + responseMessage.getMessage() + "\n");
+        // Use SwingWorker for asynchronous operation
+        SwingWorker<ChatMessage, Void> worker = new SwingWorker<>() {
+            @Override
+            protected ChatMessage doInBackground() throws Exception {
+                // Send message and get response
+                return chatService.sendMessage(messageText, selectedPersonality.getName());
+            }
 
-        // Update chat history
-        chatHistoryModel.addElement("You: " + messageText);
+            @Override
+            protected void done() {
+                try {
+                    // Get the response message
+                    ChatMessage responseMessage = get();
+
+                    // Add personality's response to chat area
+                    chatArea.append(selectedPersonality.getName() + ": " + responseMessage.getMessage() + "\n");
+
+                    // Update chat history
+                    chatHistoryModel.addElement("You: " + messageText);
+                    chatHistoryModel.addElement(selectedPersonality.getName() + ": " + responseMessage.getMessage());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(PersonalitiesPage.this, "Error communicating with the AI assistant.", "Error", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    // Re-enable input
+                    chatBar.getSendButton().setEnabled(true);
+                    chatBar.getInputField().setEditable(true);
+                }
+            }
+        };
+
+        worker.execute();
+
+        // Clear input field
+        chatBar.getInputField().setText("");
     }
 
     // Utility method to scale images

@@ -26,13 +26,21 @@ public class ChatService {
         ChatMessage userMessage = new ChatMessage("user", messageText);
         addMessage(userMessage);
 
-        // TODO: Implement interaction with GPT API to get response
-        // For now, we'll use a placeholder response
-        String responseText = "This is a placeholder response from " + personalityName + ".";
+        String responseText;
+        try{
+            responseText = chatgptapi.getResponse(chatHistory);
+        } catch (Exception e){
+            responseText = "I'm sorry, I couldn't process your request";
+        }
 
         ChatMessage responseMessage = new ChatMessage("personality", responseText);
         addMessage(responseMessage);
 
         return responseMessage;
+    }
+
+    public void setSystemMessage(String systemMessage) {
+        ChatMessage systemMsg = new ChatMessage("system", systemMessage);
+        addMessage(systemMsg);
     }
 }

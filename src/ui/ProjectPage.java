@@ -126,7 +126,7 @@ public class ProjectPage extends JFrame {
         contentPanel.add(descriptionScrollPane, gbc);
 
         // Target Audience Panel
-        JTextArea audienceTextArea = new JTextArea("Target Audience Analysis\n" + pitch.getTargetAudience());
+        JTextArea audienceTextArea = new JTextArea("Target Audience Analysis: \n" + pitch.getTargetAudience());
         audienceTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
         audienceTextArea.setLineWrap(true);
         audienceTextArea.setWrapStyleWord(true);

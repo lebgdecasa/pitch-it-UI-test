@@ -1,42 +1,15 @@
+// application/services/AudienceAnalyzer.java
 package application.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import domain.models.ChatMessage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AudienceAnalyzer {
 
     // Private constructor to prevent instantiation
     private AudienceAnalyzer() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-    public class ChatHelper {
-
-        /**
-         * Parses the API response JSON and extracts the "content" field.
-         *
-         * @param apiResponse The raw JSON response from the API.
-         * @return The "content" field as a string.
-         * @throws Exception If the JSON structure is invalid or the "content" field is missing.
-         */
-        public static String extractContent(String apiResponse) throws Exception {
-            // Create an ObjectMapper to parse the JSON
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            // Parse the JSON response
-            JsonNode rootNode = objectMapper.readTree(apiResponse);
-
-            // Navigate to the "content" field in the response
-            JsonNode contentNode = rootNode.at("/choices/0/message/content");
-
-            // Ensure the "content" field exists
-            if (contentNode.isMissingNode()) {
-                throw new IllegalArgumentException("Invalid response format: 'content' field not found");
-            }
-
-            // Return the extracted content
-            return contentNode.asText();
-        }
     }
 
     /**
@@ -47,17 +20,44 @@ public class AudienceAnalyzer {
      */
     public static String analyzeAudience(String userMessage) throws Exception {
         // Define the system message
-        String systemMessage = "in less than 15 words, give me the target audience's age, gender, and hobby preferences and instead of commas do a newline";
-        // Call getResponse method from chatgptapi and return the response
-        String jsonResponse = chatgptapi.getResponse(userMessage, systemMessage);
-        return ChatHelper.extractContent(jsonResponse);
+        String systemMessage = "Based on the name and description of this project, I want you to give me a list of five " +
+                "categories of people that would be interested in this project. Here is an example and how to structure:\n" +
+                "- Foodies;\n" +
+                "- Snack Enthusiasts;\n" +
+                "- Pickle Lovers;\n" +
+                "- Health-Conscious;\n" +
+                "- Construction workers;\n" +
+                "Your output must only contain the list, nothing else.";
+
+        // Create a list of ChatMessages
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(new ChatMessage("system", systemMessage));
+        messages.add(new ChatMessage("user", userMessage));
+
+        // Call getResponse method from chatgptapi and return the assistant's reply
+        String assistantReply = chatgptapi.getResponse(messages);
+
+        return assistantReply.trim();
     }
 
+    /**
+     * Provides a detailed analysis of the target audience.
+     * @param userMessage The message content from the user.
+     * @return The detailed target audience analysis.
+     * @throws Exception If an error occurs during the API call.
+     */
     public static String detailedTA(String userMessage) throws Exception {
         // Define the system message
-        String systemMessage = "give me an analysis for the target audience";
-        // Call getResponse method from chatgptapi and return the response
-        String jsonResponse =  chatgptapi.getResponse(userMessage, systemMessage);
-        return ChatHelper.extractContent(jsonResponse);
+        String systemMessage = "Give me an analysis for the target audience based on the following information.";
+
+        // Create a list of ChatMessages
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(new ChatMessage("system", systemMessage));
+        messages.add(new ChatMessage("user", userMessage));
+
+        // Call getResponse method from chatgptapi and return the assistant's reply
+        String assistantReply = chatgptapi.getResponse(messages);
+
+        return assistantReply.trim();
     }
 }
