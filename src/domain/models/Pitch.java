@@ -44,5 +44,10 @@ public class Pitch {
     public void setTargetAudience() throws Exception {
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name);
     }
+
+    public void setDetailedTA() throws Exception {
+        this.detailedTA = AudienceAnalyzer.detailedTA(name);
+    }
+
     // Setters (if needed)
 }
