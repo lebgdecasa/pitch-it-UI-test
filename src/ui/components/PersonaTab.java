@@ -29,9 +29,11 @@ public class PersonaTab extends JPanel {
         checkBox = new JCheckBox();
         add(checkBox, BorderLayout.WEST);
 
-        // Center: Persona name
-        nameLabel = new JLabel(persona.getName());
-        nameLabel.setFont(new Font("Inter", Font.PLAIN, 24));
+        // Center: Persona details
+        String details = String.format("<html><b>%s</b><br>Age: %d<br>Occupation: %s<br>Interests: %s</html>",
+                persona.getName(), persona.getAge(), persona.getDescription(), persona.getInterests());
+        nameLabel = new JLabel(details);
+        nameLabel.setFont(new Font("Inter", Font.PLAIN, 18));
         add(nameLabel, BorderLayout.CENTER);
 
         // Right side: Info button
@@ -48,7 +50,7 @@ public class PersonaTab extends JPanel {
         add(infoButton, BorderLayout.EAST);
 
         // Set preferred size for consistent layout
-        setPreferredSize(new Dimension(1000, 60));
+        setPreferredSize(new Dimension(1000, 100));
     }
 
     // Getter methods

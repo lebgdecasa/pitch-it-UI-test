@@ -20,10 +20,12 @@ import java.util.Objects;
 public class PersonasListPage extends JFrame {
 
     private List<PersonaTab> personaTabs;
-    private final Pitch currentPitch; // To know which project we're viewing personas for
+    private final Pitch currentPitch;
+    private final List<Persona> personas;// To know which project we're viewing personas for
 
-    public PersonasListPage(Pitch pitch) {
+    public PersonasListPage(List<Persona> personas, Pitch pitch) {
         this.currentPitch = pitch;
+        this.personas = personas;
         initializeUI();
     }
 
@@ -97,9 +99,8 @@ public class PersonasListPage extends JFrame {
         personasPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         personasPanel.setBackground(Color.WHITE);
 
-        // Fetch personas from PersonaService
-        PersonaService personaService = PersonaService.getInstance();
-        List<Persona> personas = personaService.getAllPersonas();
+
+// Fetch personas from the provided list
         personaTabs = new ArrayList<>();
 
         for (Persona persona : personas) {
@@ -129,6 +130,7 @@ public class PersonasListPage extends JFrame {
             personasPanel.add(personaTab);
             personaTabs.add(personaTab);
         }
+
 
         // Scroll Pane
         JScrollPane scrollPane = new JScrollPane(personasPanel);

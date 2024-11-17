@@ -1,21 +1,19 @@
 // ui/PersonaPage.java
 package ui;
 
-import ui.components.Button;
-import ui.components.HamburgerMenu;
-
+import application.services.PersonaService;
 import domain.models.Persona;
 import domain.models.Pitch;
+import ui.components.Button;
+import ui.components.HamburgerMenu;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
 import java.net.URL;
-import java.util.Objects;
+import java.util.List;
 
 public class PersonaPage extends JPanel {
-
     private Persona persona;
     private Pitch currentPitch;
     private boolean showChatButton;
@@ -28,184 +26,244 @@ public class PersonaPage extends JPanel {
     }
 
     private void initializeUI() {
-
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        // Main panel (optional, can be removed if not needed)
-        //JPanel mainPanel = new JPanel(new BorderLayout());
-        //mainPanel.setBackground(Color.WHITE);
+        // Header Panel with Hamburger Menu and Title
+        JPanel headerPanel = createHeaderPanel();
+        add(headerPanel, BorderLayout.NORTH);
 
-        // Header Panel
+        // Content Panel with Persona Details
+        JPanel contentPanel = createContentPanel();
+        add(contentPanel, BorderLayout.CENTER);
+
+        // Footer Panel with Back Button and Chat Button
+        JPanel footerPanel = createFooterPanel();
+        add(footerPanel, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Creates the header panel containing the Hamburger Menu and Persona Name.
+     */
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
 
-// Logo Panel
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        logoPanel.setBackground(Color.WHITE);
-
-// Load logo image
-        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
-        JLabel logoLabel = new JLabel(logoIcon);
-        logoPanel.add(logoLabel);
-
-// Title Label
-        JLabel titleLabel = new JLabel(persona.getName());
-        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-
-// HamburgerMenu
+        // Hamburger Menu (Left)
         HamburgerMenu hamburgerMenu = new HamburgerMenu() {
             @Override
             protected void navigateToDashboard() {
-                // Implement navigation
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(PersonaPage.this);
-                topFrame.dispose();
-                DashboardPage dashboardPage = new DashboardPage();
-                dashboardPage.setVisible(true);
+                navigateToPage(new DashboardPage());
             }
 
             @Override
             protected void navigateToNewPitch() {
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(PersonaPage.this);
-                topFrame.dispose();
-                NewPitchPage newPitchPage = new NewPitchPage();
-                newPitchPage.setVisible(true);
+                navigateToPage(new NewPitchPage());
             }
 
             @Override
             protected void navigateToPersonalities() {
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(PersonaPage.this);
-                topFrame.dispose();
-                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
-                personalitiesPage.setVisible(true);
+                navigateToPage(new PersonalitiesPage(currentPitch));
             }
 
             @Override
             protected void navigateToAccountSettings() {
+                navigateToPage(new AccountSettingsPage());
+            }
+
+            /**
+             * Helper method to navigate to a new page.
+             */
+            private void navigateToPage(JFrame page) {
                 JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(PersonaPage.this);
-                topFrame.dispose();
-                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
-                accountSettingsPage.setVisible(true);
+                if (topFrame != null) {
+                    topFrame.dispose();
+                }
+                page.setVisible(true);
             }
         };
+        headerPanel.add(hamburgerMenu, BorderLayout.WEST);
 
-// Add components to the header panel
-        headerPanel.add(logoPanel, BorderLayout.WEST);
+        // Title Label (Center)
+        JLabel titleLabel = new JLabel(persona.getName());
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
         headerPanel.add(titleLabel, BorderLayout.CENTER);
-        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
 
-// Add header panel to the main panel
-        add(headerPanel, BorderLayout.NORTH);
+        return headerPanel;
+    }
 
-        // Content Panel
-        JPanel contentPanel = new JPanel(new GridBagLayout());
+    /**
+     * Creates the main content panel displaying persona details.
+     */
+    private JPanel createContentPanel() {
+        JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.WHITE);
+        contentPanel.setLayout(new BorderLayout(20, 20)); // Horizontal and vertical gaps
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(20, 20, 20, 20);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.CENTER;
+        // Top Section: Avatar and Basic Info
+        JPanel topSection = new JPanel(new BorderLayout(20, 20));
+        topSection.setBackground(Color.WHITE);
+        topSection.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-// Persona Avatar
+        // Avatar (Left)
+        JLabel avatarLabel = new JLabel();
+        ImageIcon avatarIcon = scaleImageIcon(persona.getAvatar(), 200, 200);
+        if (avatarIcon != null) {
+            avatarLabel.setIcon(avatarIcon);
+        } else {
+            // If avatar not found, display placeholder
+            avatarLabel.setText("No Avatar");
+            avatarLabel.setHorizontalAlignment(JLabel.CENTER);
+            avatarLabel.setVerticalAlignment(JLabel.CENTER);
+            avatarLabel.setPreferredSize(new Dimension(200, 200));
+            avatarLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        }
+        topSection.add(avatarLabel, BorderLayout.WEST);
 
-        ImageIcon avatarIcon = scaleImageIcon(persona.getAvatar(), 200, 200); // Assuming the persona has an avatar ImageIcon
-        JLabel avatarLabel = new JLabel(avatarIcon);
-        avatarLabel.setHorizontalAlignment(JLabel.CENTER);
-        avatarLabel.setVerticalAlignment(JLabel.CENTER);
+        // Basic Info (Right)
+        JPanel basicInfoPanel = new JPanel();
+        basicInfoPanel.setBackground(Color.WHITE);
+        basicInfoPanel.setLayout(new BoxLayout(basicInfoPanel, BoxLayout.Y_AXIS));
 
-        contentPanel.add(avatarLabel, gbc);
+        JLabel nameLabel = new JLabel(persona.getName());
+        nameLabel.setFont(new Font("Inter", Font.BOLD, 24));
 
-// Info Labels (Fave Food, Age, Hometown, Hobby)
-        JLabel infoLabel = new JLabel("<html>"
-                + "<b>Fave Food: </b>" + persona.getFavoriteFood() + "<br>"
-                + "<b>Age: </b>" + persona.getAge() + "<br>"
-                + "<b>Hometown: </b>" + persona.getHometown() + "<br>"
-                + "<b>Hobby: </b>" + persona.getHobby()
-                + "</html>");
-        infoLabel.setFont(new Font("Inter", Font.PLAIN, 24));
+        JLabel ageLabel = new JLabel("Age: " + persona.getAge());
+        ageLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridheight = 1;
-        gbc.weightx = 0.7;
-        gbc.weighty = 0.3;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        contentPanel.add(infoLabel, gbc);
+        JLabel occupationLabel = new JLabel("About: " + persona.getAbout());
+        occupationLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-// About Section
-        JTextArea aboutTextArea = new JTextArea("About\n" + persona.getAbout());
-        aboutTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel hometownLabel = new JLabel("Hometown: " + persona.getHometown());
+        hometownLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+
+        JLabel favoriteFoodLabel = new JLabel("Favorite Food: " + persona.getFavoriteFood());
+        favoriteFoodLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+
+        JLabel hobbyLabel = new JLabel("Hobby: " + persona.getHobby());
+        hobbyLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+
+        JLabel interestsLabel = new JLabel("Interests: " + persona.getInterests());
+        interestsLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+
+        basicInfoPanel.add(nameLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(10));
+        basicInfoPanel.add(ageLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(5));
+        basicInfoPanel.add(occupationLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(5));
+        basicInfoPanel.add(hometownLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(5));
+        basicInfoPanel.add(favoriteFoodLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(5));
+        basicInfoPanel.add(hobbyLabel);
+        basicInfoPanel.add(Box.createVerticalStrut(5));
+        basicInfoPanel.add(interestsLabel);
+
+        topSection.add(basicInfoPanel, BorderLayout.CENTER);
+
+        contentPanel.add(topSection, BorderLayout.NORTH);
+
+        // Middle Section: About
+        JPanel aboutPanel = new JPanel(new BorderLayout());
+        aboutPanel.setBackground(Color.WHITE);
+        aboutPanel.setBorder(BorderFactory.createTitledBorder("About"));
+
+        JTextArea aboutTextArea = new JTextArea(persona.getAbout());
+        aboutTextArea.setFont(new Font("Inter", Font.PLAIN, 16));
         aboutTextArea.setLineWrap(true);
         aboutTextArea.setWrapStyleWord(true);
         aboutTextArea.setEditable(false);
+        aboutTextArea.setBackground(new Color(245, 245, 245)); // Light gray background
+
         JScrollPane aboutScrollPane = new JScrollPane(aboutTextArea);
+        aboutScrollPane.setBorder(null); // Remove border for aesthetics
 
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.weighty = 0.35;
-        contentPanel.add(aboutScrollPane, gbc);
+        aboutPanel.add(aboutScrollPane, BorderLayout.CENTER);
 
-// Stats Section
-        JTextArea statsTextArea = new JTextArea("Stats\n" + persona.getStats());
-        statsTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
+        contentPanel.add(aboutPanel, BorderLayout.CENTER);
+
+        // Bottom Section: Stats
+        JPanel statsPanel = new JPanel(new BorderLayout());
+        statsPanel.setBackground(Color.WHITE);
+        statsPanel.setBorder(BorderFactory.createTitledBorder("Stats"));
+
+        JTextArea statsTextArea = new JTextArea(persona.getStats());
+        statsTextArea.setFont(new Font("Inter", Font.PLAIN, 16));
         statsTextArea.setLineWrap(true);
         statsTextArea.setWrapStyleWord(true);
         statsTextArea.setEditable(false);
+        statsTextArea.setBackground(new Color(245, 245, 245)); // Light gray background
+
         JScrollPane statsScrollPane = new JScrollPane(statsTextArea);
+        statsScrollPane.setBorder(null); // Remove border for aesthetics
 
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.weighty = 0.35;
-        contentPanel.add(statsScrollPane, gbc);
+        statsPanel.add(statsScrollPane, BorderLayout.CENTER);
 
-// Add content panel to the center
-        add(contentPanel, BorderLayout.CENTER);
+        contentPanel.add(statsPanel, BorderLayout.SOUTH);
 
-        // Footer Panel
-        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        return contentPanel;
+    }
+
+    /**
+     * Creates the footer panel containing the Back Button and optionally the Chat Button.
+     */
+    private JPanel createFooterPanel() {
+        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         footerPanel.setBackground(Color.WHITE);
 
-// Back Button
+        // Back Button
         Button backButton = new Button("Back");
+        backButton.setFont(new Font("Inter", Font.PLAIN, 18));
         backButton.addActionListener(e -> {
-            // Handle navigation based on context
-            // If in overlay mode, close the dialog
-            // If in full page mode, navigate back to PersonasListPage
-            Component parent = SwingUtilities.getWindowAncestor(this);
-            if (parent instanceof JDialog) {
-                ((JDialog) parent).dispose();
-            } else {
-                // Navigate back to PersonasListPage
-                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            // Navigate back to PersonasListPage
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (topFrame != null) {
                 topFrame.dispose();
-                PersonasListPage personasListPage = new PersonasListPage(currentPitch);
-                personasListPage.setVisible(true);
             }
+            List<Persona> personas = PersonaService.getInstance().getAllPersonas();
+            PersonasListPage personasListPage = new PersonasListPage(personas, currentPitch);
+            personasListPage.setVisible(true);
         });
         footerPanel.add(backButton);
 
-// Chat Button (conditionally added)
+        // Chat Button (conditionally added)
         if (showChatButton) {
             Button chatButton = new Button("Chat");
+            chatButton.setFont(new Font("Inter", Font.PLAIN, 18));
             chatButton.addActionListener(e -> {
                 // Navigate to PersonaChatPage
-                // Dispose of the current window
                 JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-                topFrame.dispose();
-
-                // Create and display the PersonaChatPage
+                if (topFrame != null) {
+                    topFrame.dispose();
+                }
                 PersonaChatPage chatPage = new PersonaChatPage(persona, currentPitch);
                 chatPage.setVisible(true);
             });
             footerPanel.add(chatButton);
         }
 
-// Add footer panel to the main panel
-        add(footerPanel, BorderLayout.SOUTH);
-
+        return footerPanel;
     }
-    // Utility method to scale images
+
+    /**
+     * Helper method to load an ImageIcon from resources.
+     */
+    private ImageIcon loadImageIcon(String path) {
+        URL imgUrl = getClass().getResource(path);
+        if (imgUrl != null) {
+            return new ImageIcon(imgUrl);
+        } else {
+            System.err.println("Couldn't find file: " + path);
+            return null;
+        }
+    }
+
+    /**
+     * Utility method to scale images.
+     */
     private ImageIcon scaleImageIcon(ImageIcon icon, int width, int height) {
         if (icon == null) return null;
         Image img = icon.getImage();

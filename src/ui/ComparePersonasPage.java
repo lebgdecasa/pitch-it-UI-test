@@ -1,6 +1,7 @@
 // ui/ComparePersonasPage.java
 package ui;
 
+import application.services.PersonaService;
 import ui.components.HamburgerMenu;
 import ui.components.PersonaPanel;
 import domain.models.Persona;
@@ -9,12 +10,13 @@ import application.services.ChatService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class ComparePersonasPage extends JFrame {
 
     private Persona persona1;
     private Persona persona2;
-    private Pitch currentPitch;
+    private final Pitch currentPitch;
     private ChatService chatService;
 
     public ComparePersonasPage(Persona persona1, Persona persona2, Pitch pitch) {
@@ -115,7 +117,8 @@ public class ComparePersonasPage extends JFrame {
         backButton.addActionListener(e -> {
             // Navigate back to PersonasListPage
             dispose();
-            PersonasListPage personasListPage = new PersonasListPage(currentPitch);
+            List<Persona> personas = PersonaService.getInstance().getAllPersonas();
+            PersonasListPage personasListPage = new PersonasListPage(personas, currentPitch);
             personasListPage.setVisible(true);
         });
 

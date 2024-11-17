@@ -1,6 +1,8 @@
 // ui/ProjectPage.java
 package ui;
 
+import application.services.PersonaService;
+import domain.models.Persona;
 import ui.components.Button;
 import ui.components.HamburgerMenu;
 import domain.models.Pitch;
@@ -9,6 +11,8 @@ import application.services.PitchService;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.util.List;
 
 public class ProjectPage extends JFrame {
 
@@ -174,16 +178,29 @@ public class ProjectPage extends JFrame {
         });
 
         viewPersonasButton.addActionListener((ActionEvent e) -> {
+            String targetAudience = pitch.getTargetAudience();
+            String projectDescription = pitch.getDescription();
+
+            List<Persona> generatedPersonas = null;
+            try {
+                generatedPersonas = PersonaService.generatePersonas(targetAudience, projectDescription);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error generating personas.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
             // Navigate to PersonasListPage
             dispose();
-            PersonasListPage personasListPage = new PersonasListPage(pitch);
+            PersonasListPage personasListPage = new PersonasListPage(generatedPersonas, pitch);
             personasListPage.setVisible(true);
         });
 
         askPersonalitiesButton.addActionListener((ActionEvent e) -> {
             // Navigate to PersonalitiesPage, passing the pitch
             dispose();
-            PersonalitiesPage personalitiesPage = new PersonalitiesPage();
+            PersonalitiesPage personalitiesPage = new PersonalitiesPage(pitch);
             personalitiesPage.setVisible(true);
         });
 

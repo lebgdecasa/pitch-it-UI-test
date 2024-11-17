@@ -1,6 +1,8 @@
 // ui/PersonaChatPage.java
 package ui;
 
+import application.services.chatgptapi;
+import domain.models.ChatMessage;
 import ui.components.HamburgerMenu;
 import ui.components.Button;
 import domain.models.Persona;
@@ -9,6 +11,8 @@ import domain.models.Pitch;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PersonaChatPage extends JFrame {
 
@@ -204,15 +208,50 @@ public class PersonaChatPage extends JFrame {
             chatTextArea.append("You: " + message + "\n");
             messageField.setText("");
 
-            // Simulate persona's response (to be replaced with actual chat logic)
-            String response = personaResponds(message);
-            chatTextArea.append(persona.getName() + ": " + response + "\n");
-        }
-    }
+            // Disable input during processing
+            messageField.setEnabled(false);
 
-    private String personaResponds(String message) {
-        // Placeholder for persona's response logic
-        return "Thank you for your message!";
+            // Use SwingWorker for asynchronous processing
+            SwingWorker<String, Void> worker = new SwingWorker<>() {
+                @Override
+                protected String doInBackground() throws Exception {
+                    // Prepare messages for GPT API
+                    List<ChatMessage> messages = new ArrayList<>();
+                    String systemMessageContent = "You are " + persona.getName() + ", a persona with the following characteristics:\n" +
+                            "Age: " + persona.getAge() + "\n" +
+                            "Occupation: " + persona.getDescription() + "\n" +
+                            "Interests: " + persona.getInterests() + "\n" +
+                            "Goals: " + persona.getStats() + "\n" +
+                            "Pain Points: " + persona.getAbout() + "\n" +
+                            "Respond to the user about" + currentPitch.getDescription() + "accordingly";
+
+                    messages.add(new ChatMessage("system", systemMessageContent));
+                    messages.add(new ChatMessage("user", message));
+
+                    // Get response from GPT API
+                    String response = chatgptapi.getResponse(messages);
+                    return response;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        String response = get();
+                        // Display persona's response
+                        chatTextArea.append(persona.getName() + ": " + response + "\n");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        chatTextArea.append(persona.getName() + ": " + "Sorry, I couldn't process your request.\n");
+                    } finally {
+                        // Re-enable input
+                        messageField.setEnabled(true);
+                        messageField.requestFocus();
+                    }
+                }
+            };
+
+            worker.execute();
+        }
     }
 
     // Utility method to scale images

@@ -1,6 +1,7 @@
 // ui/PersonalitiesPage.java
 package ui;
 
+import domain.models.Pitch;
 import ui.components.PersonalityBox;
 import ui.components.ChatBar;
 import ui.components.HamburgerMenu;
@@ -27,8 +28,13 @@ public class PersonalitiesPage extends JFrame {
     private DefaultListModel<String> chatHistoryModel;
     private JLabel avatarLabel;
     private JLabel nameLabel;
+    private Pitch pitch;
 
     public PersonalitiesPage() {
+        this(null);
+    }
+    public PersonalitiesPage(Pitch pitch) {
+        this.pitch = pitch;
         initializeUI();
     }
 
@@ -252,10 +258,18 @@ public class PersonalitiesPage extends JFrame {
 
         // Set system message with personality description
         String systemMessage = "You are " + personality.getName() + ". " + personality.getDescription() + "You must answer the user exactly the same way as the personality you incarnate";
+        if (pitch != null){
+            systemMessage += "\n\nThe user is working on a project described as: \"" + pitch.getDescription() + "\". Provide insights or feedback on this project.";
+        }
         chatService.setSystemMessage(systemMessage);
 
         // Display welcome message from the personality
-        String welcomeMessage = "Hello! I'm " + personality.getName() + ". How can I assist you today?";
+        String welcomeMessage;
+        if (pitch != null){
+            welcomeMessage= "Hello! I'm " + personality.getName() + ". I'd be happy to discuss your project with you.";
+        } else{
+            welcomeMessage = "Hello! I'm " + personality.getName() + ". How can I assist you today?";
+        }
         chatArea.append(personality.getName() + ": " + welcomeMessage + "\n");
 
         // Add welcome message to chat history
