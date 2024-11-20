@@ -4,6 +4,8 @@ package domain.models;
 import application.services.AudienceAnalyzer;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pitch {
     private final String name;
@@ -11,6 +13,7 @@ public class Pitch {
     private final Image image;
     private String targetAudience;
     private String detailedTA;
+    private List<Persona> personas;
     // You can use a different type if preferred
 
     // Constructor
@@ -20,9 +23,18 @@ public class Pitch {
         this.image = image;
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
         this.detailedTA = AudienceAnalyzer.detailedTA(name + description);
+        this.personas = new ArrayList<>();
     }
 
     // Getters
+
+    public List<Persona> getPersonas() {
+        return personas;
+    }
+    public void setPersonas(List<Persona> personas) {
+        this.personas = personas;
+    }
+
     public String getName() {
         return name;
     }

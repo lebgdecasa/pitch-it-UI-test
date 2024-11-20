@@ -25,7 +25,12 @@ public class PersonasListPage extends JFrame {
 
     public PersonasListPage(List<Persona> personas, Pitch pitch) {
         this.currentPitch = pitch;
-        this.personas = personas;
+        if (personas == null || personas.isEmpty()) {
+            this.personas = currentPitch.getPersonas();
+        }else {
+            this.personas = personas;
+            currentPitch.setPersonas(personas);
+        }
         initializeUI();
     }
 

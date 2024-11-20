@@ -9,12 +9,13 @@ import domain.models.Pitch;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class VisionPage extends JFrame {
 
-    private Persona persona;
+    private final Persona persona;
     private final Pitch currentPitch;
-    private boolean isFromPersonaPage;
+    private final boolean isFromPersonaPage;
 
     public VisionPage(Persona persona, Pitch pitch, boolean isFromPersonaPage) {
         this.persona = persona;
@@ -77,7 +78,7 @@ public class VisionPage extends JFrame {
         };
         leftPanel.add(hamburgerMenu);
 
-        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
+        ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/pitch-t-logo.png")));
         JLabel logoLabel = new JLabel(logoIcon);
         leftPanel.add(logoLabel);
 
@@ -147,14 +148,27 @@ public class VisionPage extends JFrame {
         // Back Button
         Button backButton = new Button("Back");
         backButton.addActionListener(e -> {
+            // Close the current VisionPage window
             dispose();
+
+            // Navigate to the appropriate page based on the context
             if (isFromPersonaPage) {
-                new PersonaPage(persona, currentPitch, true).setVisible(true);
+                // Reopen the PersonaPage
+                JFrame personaFrame = new JFrame("Persona Details");
+                personaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                personaFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                personaFrame.setLocationRelativeTo(null);
+
+                PersonaPage personaPage = new PersonaPage(persona, currentPitch, true);
+                personaFrame.setContentPane(personaPage);
+                personaFrame.setVisible(true);
             } else {
-                new PersonasListPage(
-                        PersonaService.getInstance().getAllPersonas(),
+                // Reopen the PersonasListPage
+                PersonasListPage personasListPage = new PersonasListPage(
+                        PersonaService.getInstance().getPersonasForPitch(currentPitch),
                         currentPitch
-                ).setVisible(true);
+                );
+                personasListPage.setVisible(true);
             }
         });
         footerPanel.add(backButton);

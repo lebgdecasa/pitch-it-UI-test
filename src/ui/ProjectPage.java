@@ -178,22 +178,28 @@ public class ProjectPage extends JFrame {
         });
 
         viewPersonasButton.addActionListener((ActionEvent e) -> {
-            String targetAudience = pitch.getTargetAudience();
-            String projectDescription = pitch.getDescription();
+            // Check if personas are already associated with the pitch
+            List<Persona> personas = pitch.getPersonas();
 
-            List<Persona> generatedPersonas = null;
-            try {
-                generatedPersonas = PersonaService.generatePersonas(targetAudience, projectDescription);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error generating personas.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+            if (personas == null || personas.isEmpty()) {
+                // If no personas exist, generate them
+                String targetAudience = pitch.getTargetAudience();
+                String projectDescription = pitch.getDescription();
+
+                try {
+                    personas = PersonaService.getInstance().generatePersonas(targetAudience, projectDescription, pitch);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error generating personas.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
-            // Navigate to PersonasListPage
+
+            // Navigate to PersonasListPage with the personas
             dispose();
-            PersonasListPage personasListPage = new PersonasListPage(generatedPersonas, pitch);
+            PersonasListPage personasListPage = new PersonasListPage(personas, pitch);
             personasListPage.setVisible(true);
         });
 

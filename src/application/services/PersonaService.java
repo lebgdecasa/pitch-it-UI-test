@@ -2,18 +2,22 @@
 package application.services;
 
 import domain.models.Persona;
+import domain.models.Pitch;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PersonaService {
     private static PersonaService instance;
-    private final List<Persona> personas;
+
+    private final Map<Pitch, List<Persona>> pitchPersonas;
 
     private PersonaService() {
-        personas = new ArrayList<>();
+        pitchPersonas = new HashMap<>();
         // Initialize with detailed personas
     }
 
@@ -24,14 +28,13 @@ public class PersonaService {
         return instance;
     }
 
-    public List<Persona> getAllPersonas() {
-        return new ArrayList<>(personas);
+    public List<Persona> getPersonasForPitch(Pitch pitch) {
+        return pitchPersonas.getOrDefault(pitch, new ArrayList<>());
     }
 
-    public static List<Persona> generatePersonas(String targetAudience, String projectDescription) throws Exception {
+    public static List<Persona> generatePersonas(String targetAudience, String projectDescription, Pitch pitch) throws Exception {
         // Call chatgptapi to generate personas
-        List<Persona> personas = chatgptapi.generatePersonas(targetAudience, projectDescription);
-        return personas;
+        return chatgptapi.generatePersonas(targetAudience, projectDescription);
     }
 
 }

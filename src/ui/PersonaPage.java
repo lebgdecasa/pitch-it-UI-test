@@ -223,7 +223,7 @@ public class PersonaPage extends JPanel {
             if (topFrame != null) {
                 topFrame.dispose();
             }
-            List<Persona> personas = PersonaService.getInstance().getAllPersonas();
+            List<Persona> personas = PersonaService.getInstance().getPersonasForPitch(currentPitch);
             PersonasListPage personasListPage = new PersonasListPage(personas, currentPitch);
             personasListPage.setVisible(true);
         });
