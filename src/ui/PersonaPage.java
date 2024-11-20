@@ -229,6 +229,20 @@ public class PersonaPage extends JPanel {
         });
         footerPanel.add(backButton);
 
+        // Vision Button
+        Button visionButton = new Button("Vision");
+        visionButton.setFont(new Font("Inter", Font.PLAIN, 18));
+        visionButton.addActionListener(e -> {
+            // Navigate to VisionPage
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (topFrame != null) {
+                topFrame.dispose();
+            }
+            VisionPage visionPage = new VisionPage(persona, currentPitch, true); // Pass current pitch if needed
+            visionPage.setVisible(true);
+        });
+        footerPanel.add(visionButton);
+
         // Chat Button (conditionally added)
         if (showChatButton) {
             Button chatButton = new Button("Chat");
