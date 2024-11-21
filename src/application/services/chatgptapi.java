@@ -97,13 +97,15 @@ public class chatgptapi {
         }
 
         // Construct the system prompt
-        String systemPrompt = "You are a marketing expert. Based on the following target audience and project description, create a persona for each audience category and one extra persona that wouldn't be attracted to the product. For each persona, provide the following details:\n" +
+        String systemPrompt = "You are a marketing expert. Based on the following target audience and project description, create a persona for each audience category and one extra persona that wouldn't be attracted to the product but the differences should be subtle. For each persona, provide the following details:\n" +
                 "- Name\n" +
                 "- Age\n" +
                 "- Occupation\n" +
                 "- Interests\n" +
-                "- Goals\n" +
-                "- Pain Points\n" +
+                "- Salary range\n" +
+                "- Education\n" +
+                "- About (this section should be a paragraph that describes who the persona is and what they're like)\n" +
+                "- Market Statistics (this should be a paragraph detailing the potential market size and capital depending on the previous criterias)\n" +
                 "Present the personas in JSON format as an array.";
 
         // Prepare the messages

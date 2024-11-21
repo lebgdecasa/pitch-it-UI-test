@@ -133,17 +133,14 @@ public class PersonaPage extends JPanel {
         JLabel ageLabel = new JLabel("Age: " + persona.getAge());
         ageLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel occupationLabel = new JLabel("About: " + persona.getAbout());
-        occupationLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel educationlabel = new JLabel("Education: " + persona.getEducation());
+        educationlabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel hometownLabel = new JLabel("Hometown: " + persona.getHometown());
-        hometownLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel occupationlabel = new JLabel("Occupation: " + persona.getOccupation());
+        occupationlabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel favoriteFoodLabel = new JLabel("Favorite Food: " + persona.getFavoriteFood());
-        favoriteFoodLabel.setFont(new Font("Inter", Font.PLAIN, 18));
-
-        JLabel hobbyLabel = new JLabel("Hobby: " + persona.getHobby());
-        hobbyLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel salarylabel = new JLabel("Salary range: " + persona.getSalaryrange());
+        salarylabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
         JLabel interestsLabel = new JLabel("Interests: " + persona.getInterests());
         interestsLabel.setFont(new Font("Inter", Font.PLAIN, 18));
@@ -152,13 +149,11 @@ public class PersonaPage extends JPanel {
         basicInfoPanel.add(Box.createVerticalStrut(10));
         basicInfoPanel.add(ageLabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(occupationLabel);
+        basicInfoPanel.add(educationlabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(hometownLabel);
+        basicInfoPanel.add(occupationlabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(favoriteFoodLabel);
-        basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(hobbyLabel);
+        basicInfoPanel.add(salarylabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
         basicInfoPanel.add(interestsLabel);
 
