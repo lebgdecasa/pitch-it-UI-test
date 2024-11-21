@@ -1,4 +1,3 @@
-// application/services/chatgptapi.java
 package application.services;
 
 import domain.models.ChatMessage;
