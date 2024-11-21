@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public class VisionPage extends JFrame {
 
-    private final Persona persona;
+    public static Persona persona = null;
     private final Pitch currentPitch;
     private final boolean isFromPersonaPage;
 
