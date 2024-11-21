@@ -3,6 +3,7 @@ package ui;
 
 import application.services.AudienceAnalyzer;
 import application.services.PersonaService;
+import domain.models.DetailedTargetAudience;
 import domain.models.Persona;
 import ui.components.Button;
 import ui.components.HamburgerMenu;
@@ -255,19 +256,46 @@ public class ProjectPage extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            SwingWorker<String, Void> worker = new SwingWorker<>() {
+            DetailedTargetAudience detailedTA = pitch.getDetailedTAMap().get(audience.trim());
+
+            // Create and display the DetailedTAPage immediately
+            DetailedTAPage detailedTAPage = new DetailedTAPage(detailedTA);
+            detailedTAPage.setVisible(true);
+
+            if (detailedTA != null) {
+                // Data is already available, no need to fetch
+                return;
+            }
+
+            // Fetch data in the background
+            SwingWorker<DetailedTargetAudience, Void> worker = new SwingWorker<>() {
                 @Override
-                protected String doInBackground() throws Exception {
-                    return AudienceAnalyzer.detailedTA(audience);
+                protected DetailedTargetAudience doInBackground() throws Exception {
+                    // Fetch the DetailedTargetAudience from the API
+                    List<DetailedTargetAudience> taList = AudienceAnalyzer.getDetailedTAList(audience);
+                    if (!taList.isEmpty()) {
+                        DetailedTargetAudience fetchedTA = taList.get(0);
+                        // Store it in the Pitch's map
+                        pitch.getDetailedTAMap().put(audience.trim(), fetchedTA);
+                        return fetchedTA;
+                    }
+                    return null;
                 }
 
                 @Override
                 protected void done() {
                     try {
-                        String details = get();
-                        JOptionPane.showMessageDialog(ProjectPage.this, details, "Target Audience Details", JOptionPane.INFORMATION_MESSAGE);
+                        DetailedTargetAudience fetchedTA = get();
+                        if (fetchedTA != null) {
+                            // Update the DetailedTAPage with the fetched data
+                            detailedTAPage.updateDetailedTA(fetchedTA);
+                        } else {
+                            JOptionPane.showMessageDialog(ProjectPage.this, "Details not available.", "Error", JOptionPane.ERROR_MESSAGE);
+                            detailedTAPage.dispose();
+                        }
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(ProjectPage.this, "Error fetching details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        detailedTAPage.dispose();
                     }
                 }
             };
