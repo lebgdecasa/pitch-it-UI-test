@@ -2,6 +2,7 @@
 package domain.models;
 
 import application.services.AudienceAnalyzer;
+import application.services.ImageAnalyzer;
 
 import java.awt.Image;
 import java.util.ArrayList;
@@ -12,8 +13,8 @@ import java.util.Map;
 public class Pitch {
     private final String name;
     private final String description;
-    private final Image image;
-    private String targetAudience;
+    private final String image;
+    private final String targetAudience;
     private Map<String, DetailedTargetAudience> detailedTAMap;
     private List<Persona> personas;
     // You can use a different type if preferred
@@ -22,7 +23,7 @@ public class Pitch {
     public Pitch(String name, String description, Image image) throws Exception {
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.image = ImageAnalyzer.generateImage(name + description);
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
         this.detailedTAMap = new HashMap<>();
         this.personas = new ArrayList<>();
@@ -45,7 +46,7 @@ public class Pitch {
         return description;
     }
 
-    public Image getImage() {
+    public String getImage() {
         return image;
     }
 

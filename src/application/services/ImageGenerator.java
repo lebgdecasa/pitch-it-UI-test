@@ -10,48 +10,58 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ImageGenerator {
 
-    // Define the API URL and key
     private static final String API_URL = "https://api.openai.com/v1/images/generations";
     private static final String API_KEY = System.getenv("OPENAI_API_KEY");
 
+    /**
+     * Generates an image using OpenAI's DALL-E model.
+     *
+     * @param prompt The combined system and user input prompt.
+     * @param model The model to use, e.g., "dall-e-3".
+     * @param n The number of images to generate.
+     * @param size The size of the generated images, e.g., "1024x1024".
+     * @return The JSON response from the API as a string.
+     * @throws Exception If an error occurs during the API call.
+     */
+    public static String generateImage(String prompt, String model, int n, String size) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String payload = objectMapper.writeValueAsString(new ImageGenerationRequest(model, prompt, n, size));
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .header("Authorization", "Bearer " + API_KEY)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(payload))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return response.body();
+        } else {
+            throw new RuntimeException("Error generating image: " + response.body());
+        }
+    }
+
     public static void main(String[] args) {
         try {
-            // Parameters for the image generation
+            String prompt = "Create a vibrant and motivational advertisement for 'FitFuel' energy bars targeting health-conscious professionals.";
             String model = "dall-e-3";
-            String prompt = "Create a vibrant and motivational advertisement for 'FitFuel' energy bars targeting health-conscious professionals like Emma Thompson, a 28-year-old marketing manager. Depict Emma in a modern gym setting, wearing stylish fitness attire, energetically holding a FitFuel chocolate almond energy bar. Highlight the natural ingredients by showcasing fresh nuts and dark chocolate in the background. Include a close-up of the FitFuel bar to emphasize its texture and packaging. Incorporate the FitFuel logo at the top right corner with the tagline 'Fuel Your Fitness Journey' beneath it. Use dynamic colors like bright greens and bold oranges to convey energy and health, and ensure the overall design is clean, high-tech, and inspirational.";
-            int n = 1; // Number of images to generate
+            int n = 1;
             String size = "1024x1024";
 
-            // Create the JSON payload
+            String jsonResponse = generateImage(prompt, model, n, size);
+
+            // Parse the response to extract the image URL
             ObjectMapper objectMapper = new ObjectMapper();
-            String payload = objectMapper.writeValueAsString(new ImageGenerationRequest(model, prompt, n, size));
-
-            // Create the HTTP client and request
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
-                    .header("Authorization", "Bearer " + API_KEY)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(payload))
-                    .build();
-
-            // Send the request and handle the response
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                // Parse the response to extract the image URL
-                JsonNode jsonResponse = objectMapper.readTree(response.body());
-                String imageUrl = jsonResponse.get("data").get(0).get("url").asText();
-                System.out.println("Generated Image URL: " + imageUrl);
-            } else {
-                System.out.println("Error: " + response.body());
-            }
+            JsonNode jsonResponseNode = objectMapper.readTree(jsonResponse);
+            String imageUrl = jsonResponseNode.get("data").get(0).get("url").asText();
+            System.out.println("Generated Image URL: " + imageUrl);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Class representing the request payload
     static class ImageGenerationRequest {
         public String model;
         public String prompt;
