@@ -30,8 +30,8 @@ public class PersonaTab extends JPanel {
         add(checkBox, BorderLayout.WEST);
 
         // Center: Persona details
-        String details = String.format("<html><b>%s</b><br>Age: %d<br>Occupation: %s<br>Interests: %s</html>",
-                persona.getName(), persona.getAge(), persona.getDescription(), persona.getInterests());
+        String details = String.format("<html><b>%s</b><br>Age: %d<br>About: %s<br>Interests: %s</html>",
+                persona.getName(), persona.getAge(), persona.getAbout(), persona.getInterests());
         nameLabel = new JLabel(details);
         nameLabel.setFont(new Font("Inter", Font.PLAIN, 18));
         add(nameLabel, BorderLayout.CENTER);

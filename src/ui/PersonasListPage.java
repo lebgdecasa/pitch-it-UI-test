@@ -25,7 +25,12 @@ public class PersonasListPage extends JFrame {
 
     public PersonasListPage(List<Persona> personas, Pitch pitch) {
         this.currentPitch = pitch;
-        this.personas = personas;
+        if (personas == null || personas.isEmpty()) {
+            this.personas = currentPitch.getPersonas();
+        }else {
+            this.personas = personas;
+            currentPitch.setPersonas(personas);
+        }
         initializeUI();
     }
 
@@ -154,6 +159,9 @@ public class PersonasListPage extends JFrame {
         // "Compare" Button
         Button compareButton = new Button("Compare");
 
+        // "Vision" Button
+        Button visionButton = new Button("Vision");
+
         // "Chat" Button
         Button chatButton = new Button("Chat");
 
@@ -161,6 +169,7 @@ public class PersonasListPage extends JFrame {
         footerPanel.add(backButton);
         footerPanel.add(compareButton);
         footerPanel.add(chatButton);
+        footerPanel.add(visionButton);
 
         // Add footer panel to main panel
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
@@ -174,6 +183,18 @@ public class PersonasListPage extends JFrame {
             dispose();
             ProjectPage projectPage = new ProjectPage(currentPitch);
             projectPage.setVisible(true);
+        });
+
+        visionButton.addActionListener(e -> {
+            // Navigate to VisionPage
+            if (getSelectedPersonas().size()!=1){
+                JOptionPane.showMessageDialog(null, "Please select one persona to view Vision", "Selection Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Persona selectedPersona = getSelectedPersonas().get(0);
+            dispose();
+            VisionPage visionPage = new VisionPage(selectedPersona, currentPitch, false); // Pass current pitch if needed
+            visionPage.setVisible(true);
         });
 
         compareButton.addActionListener(e -> {

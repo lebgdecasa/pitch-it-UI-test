@@ -4,13 +4,18 @@ package domain.models;
 import application.services.AudienceAnalyzer;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Pitch {
     private final String name;
     private final String description;
     private final Image image;
     private String targetAudience;
-    private String detailedTA;
+    private Map<String, DetailedTargetAudience> detailedTAMap;
+    private List<Persona> personas;
     // You can use a different type if preferred
 
     // Constructor
@@ -19,10 +24,19 @@ public class Pitch {
         this.description = description;
         this.image = image;
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
-        this.detailedTA = AudienceAnalyzer.detailedTA(name + description);
+        this.detailedTAMap = new HashMap<>();
+        this.personas = new ArrayList<>();
     }
 
     // Getters
+
+    public List<Persona> getPersonas() {
+        return personas;
+    }
+    public void setPersonas(List<Persona> personas) {
+        this.personas = personas;
+    }
+
     public String getName() {
         return name;
     }
@@ -39,14 +53,12 @@ public class Pitch {
         return targetAudience;
     }
 
-    public String getDetailedTA() {return detailedTA;}
-
-    public void setTargetAudience() throws Exception {
-        this.targetAudience = AudienceAnalyzer.analyzeAudience(name);
+    public Map<String, DetailedTargetAudience> getDetailedTAMap() {
+        return detailedTAMap;
     }
 
-    public void setDetailedTA() throws Exception {
-        this.detailedTA = AudienceAnalyzer.detailedTA(name);
+    public void setDetailedTAMap(Map<String, DetailedTargetAudience> detailedTAMap) {
+        this.detailedTAMap = detailedTAMap;
     }
 
     // Setters (if needed)

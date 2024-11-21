@@ -2,7 +2,6 @@
 package domain.models;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.json.JSONArray;
@@ -11,30 +10,26 @@ import org.json.JSONException;
 
 public class Persona {
     private String name;
-    private String description;
-    private String favoriteFood;
     private int age;
-    private String hometown;
-    private String hobby;
+    private String education;
+    private String salaryrange;
     private String about;
     private String stats;
-    private String quote;
+    private String occupation;
     private ImageIcon avatar;
     private String interests; // Added field to store interests as a String
 
     // Constructor
-    public Persona(String name, String description, String favoriteFood, int age, String hometown, String hobby, String about, String stats, String quote, String interests, ImageIcon avatar) {
+    public Persona(String name, String occupation, int age, String education, String salaryrange, String about, String stats, String interests, ImageIcon avatar) {
         this.name = name;
-        this.description = description;
-        this.favoriteFood = favoriteFood;
+        this.occupation = occupation;
         this.age = age;
-        this.hometown = hometown;
-        this.hobby = hobby;
+        this.education = education;
+        this.salaryrange = salaryrange;
         this.about = about;
         this.stats = stats;
-        this.quote = quote;
-        this.interests = interests;
         this.avatar = avatar;
+        this.interests = interests;
     }
 
     // Getters and Setters
@@ -43,24 +38,20 @@ public class Persona {
         return name;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public String getFavoriteFood() {
-        return favoriteFood;
+    public String getOccupation() {
+        return occupation;
     }
 
     public int getAge() {
         return age;
     }
 
-    public String getHometown() {
-        return hometown;
+    public String getEducation() {
+        return education;
     }
 
-    public String getHobby() {
-        return hobby;
+    public String getSalaryrange() {
+        return salaryrange;
     }
 
     public String getAbout() {
@@ -69,10 +60,6 @@ public class Persona {
 
     public String getStats() {
         return stats;
-    }
-
-    public String getQuote() {
-        return quote;
     }
 
     public ImageIcon getAvatar() {
@@ -85,24 +72,22 @@ public class Persona {
 
     // Static method to create a Persona from JSON
     public static Persona fromJSON(JSONObject jsonObject) throws MalformedURLException {
-        String name = jsonObject.optString("Name", "Unknown");
-        String description = jsonObject.optString("Description", "");
-        String favoriteFood = jsonObject.optString("Favorite Food", "N/A");
-        int age = jsonObject.optInt("Age", 25);
-        String hometown = jsonObject.optString("Hometown", "Unknown");
-        String hobby = jsonObject.optString("Hobby", "N/A");
-        String about = jsonObject.optString("About", "");
-        String stats = jsonObject.optString("Stats", "");
-        String quote = jsonObject.optString("Quote", "");
-        String avatarUrl = jsonObject.optString("Avatar URL", null);
+        String name = jsonObject.optString("name", "Unknown");
+        String occupation = jsonObject.optString("occupation", "N/A");
+        int age = jsonObject.optInt("age", 25);
+        String education = jsonObject.optString("education", "Unknown");
+        String salaryRange = jsonObject.optString("salaryrange", "N/A");
+        String about = jsonObject.optString("about", "");
+        String stats = jsonObject.optString("marketstatistics", "");
+        String avatarUrl = jsonObject.optString("avatarurl", null);
         String interests = ""; // Initialize interests
 
-        // Handle "Interests" field
+        // Handle "interests" field
         try {
-            if (jsonObject.has("Interests")) {
-                Object interestsObj = jsonObject.get("Interests");
+            if (jsonObject.has("interests")) {
+                Object interestsObj = jsonObject.get("interests");
                 if (interestsObj instanceof JSONArray) {
-                    JSONArray interestsArray = jsonObject.getJSONArray("Interests");
+                    JSONArray interestsArray = (JSONArray) interestsObj;
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < interestsArray.length(); i++) {
                         sb.append(interestsArray.getString(i));
@@ -112,7 +97,7 @@ public class Persona {
                     }
                     interests = sb.toString();
                 } else if (interestsObj instanceof String) {
-                    interests = jsonObject.getString("Interests");
+                    interests = (String) interestsObj;
                 }
             }
         } catch (JSONException e) {
@@ -127,13 +112,12 @@ public class Persona {
                 avatar = new ImageIcon(new URL(avatarUrl));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                // Handle invalid URL or set a default avatar
                 avatar = new ImageIcon("default-avatar.png"); // Ensure this path is correct
             }
         } else {
             avatar = new ImageIcon("default-avatar.png"); // Ensure this path is correct
         }
 
-        return new Persona(name, description, favoriteFood, age, hometown, hobby, about, stats, quote, interests, avatar);
+        return new Persona(name, occupation, age, education, salaryRange, about, stats, interests, avatar);
     }
 }

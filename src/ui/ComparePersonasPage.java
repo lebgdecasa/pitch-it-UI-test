@@ -1,29 +1,24 @@
-// ui/ComparePersonasPage.java
 package ui;
 
-import application.services.PersonaService;
+import ui.components.Button;
 import ui.components.HamburgerMenu;
-import ui.components.PersonaPanel;
+import java.util.List;
 import domain.models.Persona;
 import domain.models.Pitch;
-import application.services.ChatService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 public class ComparePersonasPage extends JFrame {
 
     private Persona persona1;
     private Persona persona2;
     private final Pitch currentPitch;
-    private ChatService chatService;
 
     public ComparePersonasPage(Persona persona1, Persona persona2, Pitch pitch) {
         this.persona1 = persona1;
         this.persona2 = persona2;
         this.currentPitch = pitch;
-        this.chatService = new ChatService();
         initializeUI();
     }
 
@@ -38,96 +33,179 @@ public class ComparePersonasPage extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.WHITE);
 
-        // Header Panel
-        JPanel headerPanel = new JPanel(new BorderLayout());
+        // Header
+        JPanel headerPanel = createHeaderPanel();
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Center content
+        JPanel centerPanel = createCenterPanel();
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Footer
+        JPanel footerPanel = createFooterPanel();
+        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+
+        // Set main panel as content pane
+        setContentPane(mainPanel);
+    }
+
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel(null);
         headerPanel.setBackground(Color.WHITE);
+        headerPanel.setPreferredSize(new Dimension(1440, 100)); // Reduced height to 100px
 
-// Logo Panel
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        logoPanel.setBackground(Color.WHITE);
-
-// Logo
+        // Logo
         ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
         JLabel logoLabel = new JLabel(logoIcon);
-        logoPanel.add(logoLabel);
+        logoLabel.setBounds(10, 10, 120, 80); // Scaled to fit
+        headerPanel.add(logoLabel);
 
-// Add logo panel to the header
-        headerPanel.add(logoPanel, BorderLayout.WEST);
-
-// Hamburger Menu
+        // Hamburger Menu
         HamburgerMenu hamburgerMenu = new HamburgerMenu() {
             @Override
             protected void navigateToDashboard() {
                 dispose();
-                DashboardPage dashboardPage = new DashboardPage();
-                dashboardPage.setVisible(true);
+                new DashboardPage().setVisible(true);
             }
 
             @Override
             protected void navigateToNewPitch() {
                 dispose();
-                NewPitchPage newPitchPage = new NewPitchPage();
-                newPitchPage.setVisible(true);
+                new NewPitchPage().setVisible(true);
             }
 
             @Override
             protected void navigateToPersonalities() {
                 dispose();
-                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
-                personalitiesPage.setVisible(true);
+                new PersonalitiesPage(currentPitch).setVisible(true);
             }
 
             @Override
             protected void navigateToAccountSettings() {
                 dispose();
-                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
-                accountSettingsPage.setVisible(true);
+                new AccountSettingsPage().setVisible(true);
             }
         };
-        headerPanel.add(hamburgerMenu, BorderLayout.EAST);
+        hamburgerMenu.setBounds(130, 10, 60, 80); // Positioned next to the logo
+        headerPanel.add(hamburgerMenu);
 
-// Title Label (optional)
-        JLabel titleLabel = new JLabel("Compare Personas");
-        titleLabel.setFont(new Font("Inter", Font.BOLD, 32));
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-        headerPanel.add(titleLabel, BorderLayout.CENTER);
+        // Title
+        JLabel titleLabel = new JLabel("Compare reactions for " + currentPitch.getName());
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 24)); // Adjusted font size
+        titleLabel.setBounds(200, 35, 1000, 30);
+        headerPanel.add(titleLabel);
 
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        return headerPanel;
+    }
 
-        // Center Panel
-        JPanel centerPanel = new JPanel(new GridLayout(1, 2, 10, 0)); // Adds horizontal spacing between panels
+    private JPanel createCenterPanel() {
+        JPanel centerPanel = new JPanel(null);
         centerPanel.setBackground(Color.WHITE);
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Adds padding around the panel
 
-        // Persona Panels
-        PersonaPanel personaPanel1 = new PersonaPanel(persona1, currentPitch);
-        PersonaPanel personaPanel2 = new PersonaPanel(persona2, currentPitch);
+        // Persona 1
+        JLabel persona1Avatar = new JLabel(new ImageIcon(String.valueOf(persona1.getAvatar())));
+        persona1Avatar.setBounds(55, 130, 93, 99);
+        centerPanel.add(persona1Avatar);
 
-        centerPanel.add(personaPanel1);
-        centerPanel.add(personaPanel2);
+        JLabel persona1Name = new JLabel(persona1.getName());
+        persona1Name.setFont(new Font("Inter", Font.BOLD, 24));
+        persona1Name.setBounds(163, 150, 300, 30);
+        centerPanel.add(persona1Name);
 
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        JScrollPane persona1Response = createDynamicTextPane("Loading " + persona1.getName() + "'s response...");
+        persona1Response.setBounds(55, 230, 634, 200);
+        centerPanel.add(persona1Response);
 
-        // Footer Panel
+        // Persona 2
+        JLabel persona2Avatar = new JLabel(new ImageIcon(String.valueOf(persona2.getAvatar())));
+        persona2Avatar.setBounds(750, 130, 93, 99);
+        centerPanel.add(persona2Avatar);
+
+        JLabel persona2Name = new JLabel(persona2.getName());
+        persona2Name.setFont(new Font("Inter", Font.BOLD, 24));
+        persona2Name.setBounds(858, 150, 300, 30);
+        centerPanel.add(persona2Name);
+
+        JScrollPane persona2Response = createDynamicTextPane("Loading " + persona2.getName() + "'s response...");
+        persona2Response.setBounds(750, 230, 634, 200);
+        centerPanel.add(persona2Response);
+
+        // Comparison Text
+        JScrollPane comparisonResponse = createDynamicTextPane("Loading comparison...");
+        comparisonResponse.setBounds(56, 450, 1328, 200);
+        centerPanel.add(comparisonResponse);
+
+        // Load responses asynchronously
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            private String response1;
+            private String response2;
+            private String comparison;
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                response1 = fetchPersonaResponse(persona1);
+                response2 = fetchPersonaResponse(persona2);
+                comparison = fetchComparisonResponse(response1, response2);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JTextPane persona1Text = (JTextPane) persona1Response.getViewport().getView();
+                    JTextPane persona2Text = (JTextPane) persona2Response.getViewport().getView();
+                    JTextPane comparisonText = (JTextPane) comparisonResponse.getViewport().getView();
+
+                    persona1Text.setText(response1);
+                    persona2Text.setText(response2);
+                    comparisonText.setText(comparison);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        worker.execute();
+
+        return centerPanel;
+    }
+
+    private JPanel createFooterPanel() {
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         footerPanel.setBackground(Color.WHITE);
 
         // Back Button
-        Button backButton = new Button("Back");
+        Button backButton = new Button("Back to Pitch Page");
         backButton.addActionListener(e -> {
-            // Navigate back to PersonasListPage
             dispose();
-            List<Persona> personas = PersonaService.getInstance().getAllPersonas();
-            PersonasListPage personasListPage = new PersonasListPage(personas, currentPitch);
-            personasListPage.setVisible(true);
+            new ProjectPage(currentPitch).setVisible(true);
         });
-
         footerPanel.add(backButton);
 
-        // Add footer panel to main panel
-        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+        return footerPanel;
+    }
 
-        // Set main panel as content pane
-        setContentPane(mainPanel);
+    private JScrollPane createDynamicTextPane(String placeholder) {
+        JTextPane textPane = new JTextPane();
+        textPane.setText(placeholder);
+        textPane.setFont(new Font("Inter", Font.PLAIN, 18));
+        textPane.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(textPane);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        return scrollPane;
+    }
+
+    private String fetchPersonaResponse(Persona persona) throws Exception {
+        String systemMessage = "You are " + persona.getName() +  ","+ persona.getAge() + "," + persona.getInterests()+"," + persona.getOccupation()+"," + persona.getSalaryrange()+ ". Describe your reaction to the pitch " +
+                currentPitch.getName() + ":\n" + currentPitch.getDescription();
+        return application.services.chatgptapi.getResponse(List.of(new domain.models.ChatMessage("system", systemMessage)));
+    }
+
+    private String fetchComparisonResponse(String response1, String response2) throws Exception {
+        String systemMessage = "Compare the following responses:\nResponse 1:\n" + response1 +
+                "\nResponse 2:\n" + response2;
+        return application.services.chatgptapi.getResponse(List.of(new domain.models.ChatMessage("system", systemMessage)));
     }
 }

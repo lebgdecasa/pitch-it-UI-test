@@ -1,22 +1,25 @@
-// ui/ProjectPage.java
+// Updated ProjectPage.java
 package ui;
 
+import application.services.AudienceAnalyzer;
 import application.services.PersonaService;
+import domain.models.DetailedTargetAudience;
 import domain.models.Persona;
 import ui.components.Button;
 import ui.components.HamburgerMenu;
 import domain.models.Pitch;
-import application.services.PitchService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class ProjectPage extends JFrame {
 
-    private Pitch pitch;
+    private final Pitch pitch;
 
     public ProjectPage(Pitch pitch) {
         this.pitch = pitch;
@@ -35,6 +38,22 @@ public class ProjectPage extends JFrame {
         mainPanel.setBackground(Color.WHITE);
 
         // Header Panel
+        JPanel headerPanel = createHeaderPanel();
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Content Panel
+        JPanel contentPanel = createContentPanel();
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Footer Panel
+        JPanel footerPanel = createFooterPanel();
+        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+
+        // Set main panel as content pane
+        setContentPane(mainPanel);
+    }
+
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(Color.WHITE);
 
@@ -42,7 +61,7 @@ public class ProjectPage extends JFrame {
         JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         logoPanel.setBackground(Color.WHITE);
 
-        // Load logo image
+        // Logo
         ImageIcon logoIcon = new ImageIcon(getClass().getResource("/pitch-t-logo.png"));
         JLabel logoLabel = new JLabel(logoIcon);
         logoPanel.add(logoLabel);
@@ -57,29 +76,25 @@ public class ProjectPage extends JFrame {
             @Override
             protected void navigateToDashboard() {
                 dispose();
-                DashboardPage dashboardPage = new DashboardPage();
-                dashboardPage.setVisible(true);
+                new DashboardPage().setVisible(true);
             }
 
             @Override
             protected void navigateToNewPitch() {
                 dispose();
-                NewPitchPage newPitchPage = new NewPitchPage();
-                newPitchPage.setVisible(true);
+                new NewPitchPage().setVisible(true);
             }
 
             @Override
             protected void navigateToPersonalities() {
                 dispose();
-                PersonalitiesPage personalitiesPage = new PersonalitiesPage();
-                personalitiesPage.setVisible(true);
+                new PersonalitiesPage().setVisible(true);
             }
 
             @Override
             protected void navigateToAccountSettings() {
                 dispose();
-                AccountSettingsPage accountSettingsPage = new AccountSettingsPage();
-                accountSettingsPage.setVisible(true);
+                new AccountSettingsPage().setVisible(true);
             }
         };
 
@@ -88,9 +103,10 @@ public class ProjectPage extends JFrame {
         headerPanel.add(titleLabel, BorderLayout.CENTER);
         headerPanel.add(hamburgerMenu, BorderLayout.EAST);
 
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        return headerPanel;
+    }
 
-        // Content Panel
+    private JPanel createContentPanel() {
         JPanel contentPanel = new JPanel(new GridBagLayout());
         contentPanel.setBackground(Color.WHITE);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -102,8 +118,6 @@ public class ProjectPage extends JFrame {
         imagePanel.setBackground(Color.LIGHT_GRAY);
         imagePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-        // If you have an image for the pitch, you can display it here
-        // For now, we'll use a placeholder
         JLabel imageLabel = new JLabel("Image Placeholder", SwingConstants.CENTER);
         imageLabel.setFont(new Font("Inter", Font.PLAIN, 24));
         imagePanel.add(imageLabel);
@@ -129,73 +143,88 @@ public class ProjectPage extends JFrame {
         gbc.weighty = 0.5;
         contentPanel.add(descriptionScrollPane, gbc);
 
-        // Target Audience Panel
-        JTextArea audienceTextArea = new JTextArea("Target Audience Analysis: \n" + pitch.getTargetAudience());
-        audienceTextArea.setFont(new Font("Inter", Font.PLAIN, 18));
-        audienceTextArea.setLineWrap(true);
-        audienceTextArea.setWrapStyleWord(true);
-        audienceTextArea.setEditable(false);
-        JScrollPane audienceScrollPane = new JScrollPane(audienceTextArea);
+        // Target Audience Panel with Info Buttons
+        JPanel targetAudiencePanel = new JPanel();
+        targetAudiencePanel.setLayout(new BoxLayout(targetAudiencePanel, BoxLayout.Y_AXIS));
+        targetAudiencePanel.setBackground(Color.WHITE);
+        targetAudiencePanel.setBorder(BorderFactory.createTitledBorder("Target Audience"));
+
+        String[] targetAudience = pitch.getTargetAudience().split(";");
+        for (String audience : targetAudience) {
+            JPanel audienceRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            audienceRow.setBackground(Color.WHITE);
+
+            JLabel audienceLabel = new JLabel(audience.trim());
+            audienceLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+
+            JButton infoButton = new JButton("Info");
+            infoButton.setFont(new Font("Inter", Font.PLAIN, 14));
+            infoButton.addActionListener(new InfoButtonListener(audience));
+
+            audienceRow.add(audienceLabel);
+            audienceRow.add(infoButton);
+            targetAudiencePanel.add(audienceRow);
+        }
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridheight = 3;
         gbc.weightx = 0.5;
         gbc.weighty = 1.0;
-        contentPanel.add(audienceScrollPane, gbc);
+        contentPanel.add(new JScrollPane(targetAudiencePanel), gbc);
 
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        return contentPanel;
+    }
 
-        // Footer Panel
+    private JPanel createFooterPanel() {
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         footerPanel.setBackground(Color.WHITE);
 
         // Edit Button
         JButton editButton = new JButton("Edit");
         editButton.setFont(new Font("Inter", Font.PLAIN, 24));
-        ImageIcon editIcon = new ImageIcon(getClass().getResource("/edit.png"));
-        if (editIcon != null) {
-            editButton.setIcon(editIcon);
-        }
+        ImageIcon editIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/edit.png")));
+        editButton.setIcon(editIcon);
         footerPanel.add(editButton);
 
-        // View Personas Button
-        Button viewPersonasButton = new Button("View Personas");
-        footerPanel.add(viewPersonasButton);
-
-        // Ask Personalities Button
-        Button askPersonalitiesButton = new Button("Ask Personalities");
-        footerPanel.add(askPersonalitiesButton);
-
-        // Back Button
-        Button backButton = new Button("Back");
-        footerPanel.add(backButton);
-
-        // Action Listeners
         editButton.addActionListener((ActionEvent e) -> {
             // Implement edit functionality
             JOptionPane.showMessageDialog(this, "Edit functionality not implemented yet.");
         });
 
-        viewPersonasButton.addActionListener((ActionEvent e) -> {
-            String targetAudience = pitch.getTargetAudience();
-            String projectDescription = pitch.getDescription();
+        // View Personas Button
+        Button viewPersonasButton = new Button("View Personas");
+        footerPanel.add(viewPersonasButton);
 
-            List<Persona> generatedPersonas = null;
-            try {
-                generatedPersonas = PersonaService.generatePersonas(targetAudience, projectDescription);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error generating personas.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+        viewPersonasButton.addActionListener((ActionEvent e) -> {
+            // Check if personas are already associated with the pitch
+            List<Persona> personas = pitch.getPersonas();
+
+            if (personas == null || personas.isEmpty()) {
+                // If no personas exist, generate them
+                String targetAudience = pitch.getTargetAudience();
+                String projectDescription = pitch.getDescription();
+
+                try {
+                    personas = PersonaService.getInstance().generatePersonas(targetAudience, projectDescription, pitch);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error generating personas.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
-            // Navigate to PersonasListPage
+
+            // Navigate to PersonasListPage with the personas
             dispose();
-            PersonasListPage personasListPage = new PersonasListPage(generatedPersonas, pitch);
+            PersonasListPage personasListPage = new PersonasListPage(personas, pitch);
             personasListPage.setVisible(true);
         });
+
+        // Ask Personalities Button
+        Button askPersonalitiesButton = new Button("Ask Personalities");
+        footerPanel.add(askPersonalitiesButton);
 
         askPersonalitiesButton.addActionListener((ActionEvent e) -> {
             // Navigate to PersonalitiesPage, passing the pitch
@@ -204,6 +233,10 @@ public class ProjectPage extends JFrame {
             personalitiesPage.setVisible(true);
         });
 
+        // Back Button
+        Button backButton = new Button("Back");
+        footerPanel.add(backButton);
+
         backButton.addActionListener((ActionEvent e) -> {
             // Navigate back to DashboardPage
             dispose();
@@ -211,9 +244,64 @@ public class ProjectPage extends JFrame {
             dashboardPage.setVisible(true);
         });
 
-        mainPanel.add(footerPanel, BorderLayout.SOUTH);
+        return footerPanel;
+    }
 
-        // Set main panel as content pane
-        setContentPane(mainPanel);
+    private class InfoButtonListener implements ActionListener {
+        private final String audience;
+
+        public InfoButtonListener(String audience) {
+            this.audience = audience;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String audienceKey = audience.trim();
+            DetailedTargetAudience detailedTA = pitch.getDetailedTAMap().get(audienceKey);
+
+            if (detailedTA != null) {
+                // DetailedTA is already available
+                DetailedTAPage detailedTAPage = new DetailedTAPage(detailedTA);
+                detailedTAPage.setVisible(true);
+            } else {
+                // DetailedTA is not available, generate it
+                DetailedTAPage detailedTAPage = new DetailedTAPage(null); // Show loading page
+                detailedTAPage.setVisible(true);
+
+                // Fetch data in the background
+                SwingWorker<DetailedTargetAudience, Void> worker = new SwingWorker<>() {
+                    @Override
+                    protected DetailedTargetAudience doInBackground() throws Exception {
+                        // Generate detailedTA for the selected audience
+                        List<DetailedTargetAudience> taList = AudienceAnalyzer.getDetailedTAList(audience);
+                        if (!taList.isEmpty()) {
+                            DetailedTargetAudience fetchedTA = taList.get(0);
+                            // Store it in the Pitch's map
+                            pitch.getDetailedTAMap().put(audienceKey, fetchedTA);
+                            return fetchedTA;
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            DetailedTargetAudience fetchedTA = get();
+                            if (fetchedTA != null) {
+                                // Update the DetailedTAPage with the fetched data
+                                detailedTAPage.updateDetailedTA(fetchedTA);
+                            } else {
+                                JOptionPane.showMessageDialog(ProjectPage.this, "Details not available.", "Error", JOptionPane.ERROR_MESSAGE);
+                                detailedTAPage.dispose();
+                            }
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(ProjectPage.this, "Error fetching details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                            detailedTAPage.dispose();
+                        }
+                    }
+                };
+                worker.execute();
+            }
+        }
     }
 }

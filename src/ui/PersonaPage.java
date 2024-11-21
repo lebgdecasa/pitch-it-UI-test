@@ -133,17 +133,14 @@ public class PersonaPage extends JPanel {
         JLabel ageLabel = new JLabel("Age: " + persona.getAge());
         ageLabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel occupationLabel = new JLabel("About: " + persona.getAbout());
-        occupationLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel educationlabel = new JLabel("Education: " + persona.getEducation());
+        educationlabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel hometownLabel = new JLabel("Hometown: " + persona.getHometown());
-        hometownLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel occupationlabel = new JLabel("Occupation: " + persona.getOccupation());
+        occupationlabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
-        JLabel favoriteFoodLabel = new JLabel("Favorite Food: " + persona.getFavoriteFood());
-        favoriteFoodLabel.setFont(new Font("Inter", Font.PLAIN, 18));
-
-        JLabel hobbyLabel = new JLabel("Hobby: " + persona.getHobby());
-        hobbyLabel.setFont(new Font("Inter", Font.PLAIN, 18));
+        JLabel salarylabel = new JLabel("Salary range: " + persona.getSalaryrange());
+        salarylabel.setFont(new Font("Inter", Font.PLAIN, 18));
 
         JLabel interestsLabel = new JLabel("Interests: " + persona.getInterests());
         interestsLabel.setFont(new Font("Inter", Font.PLAIN, 18));
@@ -152,13 +149,11 @@ public class PersonaPage extends JPanel {
         basicInfoPanel.add(Box.createVerticalStrut(10));
         basicInfoPanel.add(ageLabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(occupationLabel);
+        basicInfoPanel.add(educationlabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(hometownLabel);
+        basicInfoPanel.add(occupationlabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(favoriteFoodLabel);
-        basicInfoPanel.add(Box.createVerticalStrut(5));
-        basicInfoPanel.add(hobbyLabel);
+        basicInfoPanel.add(salarylabel);
         basicInfoPanel.add(Box.createVerticalStrut(5));
         basicInfoPanel.add(interestsLabel);
 
@@ -223,11 +218,25 @@ public class PersonaPage extends JPanel {
             if (topFrame != null) {
                 topFrame.dispose();
             }
-            List<Persona> personas = PersonaService.getInstance().getAllPersonas();
+            List<Persona> personas = PersonaService.getInstance().getPersonasForPitch(currentPitch);
             PersonasListPage personasListPage = new PersonasListPage(personas, currentPitch);
             personasListPage.setVisible(true);
         });
         footerPanel.add(backButton);
+
+        // Vision Button
+        Button visionButton = new Button("Vision");
+        visionButton.setFont(new Font("Inter", Font.PLAIN, 18));
+        visionButton.addActionListener(e -> {
+            // Navigate to VisionPage
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (topFrame != null) {
+                topFrame.dispose();
+            }
+            VisionPage visionPage = new VisionPage(persona, currentPitch, true); // Pass current pitch if needed
+            visionPage.setVisible(true);
+        });
+        footerPanel.add(visionButton);
 
         // Chat Button (conditionally added)
         if (showChatButton) {

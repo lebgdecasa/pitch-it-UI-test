@@ -9,8 +9,11 @@ import java.net.URI;
 import java.net.http.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import domain.models.DetailedTargetAudience;
 import domain.models.Persona;
+import domain.models.Pitch;
 import org.json.*;
 
 public class chatgptapi {
@@ -38,7 +41,7 @@ public class chatgptapi {
 
         // JSON request body
         JSONObject requestBody = new JSONObject();
-        requestBody.put("model", "gpt-4");
+        requestBody.put("model", "gpt-4o-mini");
         requestBody.put("messages", messagesArray);
 
         // Create HTTP request
@@ -75,6 +78,31 @@ public class chatgptapi {
         return "I'm sorry, I couldn't understand the response.";
     }
 
+    private static JSONObject normalizeKeys(JSONObject jsonObject) {
+        JSONObject normalized = new JSONObject();
+        for (String key : jsonObject.keySet()) {
+            Object value = jsonObject.get(key);
+            String lowerKey = key.toLowerCase().replaceAll("\\s+", "");
+
+            if (value instanceof JSONObject) {
+                value = normalizeKeys((JSONObject) value);
+            } else if (value instanceof JSONArray) {
+                JSONArray array = (JSONArray) value;
+                JSONArray newArray = new JSONArray();
+                for (int i = 0; i < array.length(); i++) {
+                    Object arrayElement = array.get(i);
+                    if (arrayElement instanceof JSONObject) {
+                        arrayElement = normalizeKeys((JSONObject) arrayElement);
+                    }
+                    newArray.put(arrayElement);
+                }
+                value = newArray;
+            }
+            normalized.put(lowerKey, value);
+        }
+        return normalized;
+    }
+
     private static void logApiCall(String input, String output) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH, true))) {
             writer.write("API Input: " + input);
@@ -88,22 +116,87 @@ public class chatgptapi {
         }
     }
 
-    public static List<Persona> generatePersonas(String targetAudience, String projectDescription) throws IOException, InterruptedException {
+    public static List<Persona> generatePersonas(String targetAudience, String projectDescription, Pitch pitch) throws IOException, InterruptedException, Exception {
         final String apiKey = System.getenv("OPENAI_API_KEY");
 
         if (apiKey == null || apiKey.isEmpty()) {
             throw new IllegalArgumentException("API key is missing. Please set the OPENAI_API_KEY environment variable.");
         }
 
-        // Construct the system prompt
-        String systemPrompt = "You are a marketing expert. Based on the following target audience and project description, create a persona for each audience category. For each persona, provide the following details:\n" +
+        // Step 1: Generate Detailed Target Audience Information
+        Map<String, DetailedTargetAudience> detailedTAMap = pitch.getDetailedTAMap();
+        String[] audienceCategories = targetAudience.split(";");
+        List<DetailedTargetAudience> detailedTAList = new ArrayList<>();
+
+        for (String audience : audienceCategories) {
+            audience = audience.trim();
+            if (audience.isEmpty()) continue;
+
+            if (!detailedTAMap.containsKey(audience)) {
+                // Generate detailedTA if not already generated
+                List<DetailedTargetAudience> taList = AudienceAnalyzer.getDetailedTAList(audience);
+                if (!taList.isEmpty()) {
+                    DetailedTargetAudience detailedTA = taList.get(0);
+                    detailedTAMap.put(audience, detailedTA);
+                    detailedTAList.add(detailedTA);
+                }
+            } else {
+                // Use existing detailedTA
+                detailedTAList.add(detailedTAMap.get(audience));
+            }
+        }
+
+        // Step 2: Construct the system prompt including detailedTA
+        StringBuilder systemPromptBuilder = new StringBuilder();
+        systemPromptBuilder.append("You are a marketing expert. Based on the following detailed target audience information and project description, create a persona for each audience category and one extra persona that wouldn't be attracted to the product but the differences should be subtle.\n\n");
+
+        systemPromptBuilder.append("Detailed Target Audience Information:\n");
+
+        for (DetailedTargetAudience detailedTA : detailedTAList) {
+            systemPromptBuilder.append("Category: ").append(detailedTA.getName()).append("\n");
+            systemPromptBuilder.append("Demographic Attributes:\n");
+            systemPromptBuilder.append("  Age Range: ").append(detailedTA.getMinAge()).append(" - ").append(detailedTA.getMaxAge()).append("\n");
+            systemPromptBuilder.append("  Gender: ").append(detailedTA.getGender()).append("\n");
+            systemPromptBuilder.append("  Education Level: ").append(detailedTA.getEducationLevel()).append("\n");
+            systemPromptBuilder.append("  Occupation: ").append(detailedTA.getOccupation()).append("\n");
+            systemPromptBuilder.append("  Income Level: ").append(detailedTA.getIncomeLevel()).append("\n");
+            systemPromptBuilder.append("  Geographic Location: ").append(detailedTA.getGeographicLocation()).append("\n");
+            systemPromptBuilder.append("Psychographic Attributes:\n");
+            systemPromptBuilder.append("  Interests and Passions: ").append(String.join(", ", detailedTA.getInterestsAndPassions())).append("\n");
+            systemPromptBuilder.append("  Values: ").append(String.join(", ", detailedTA.getValues())).append("\n");
+            systemPromptBuilder.append("  Personality Traits: ").append(String.join(", ", detailedTA.getPersonalityTraits())).append("\n");
+            systemPromptBuilder.append("  Lifestyle: ").append(detailedTA.getLifestyle()).append("\n");
+            // You can continue adding other attributes if needed
+            systemPromptBuilder.append("\n");
+        }
+
+        systemPromptBuilder.append("Project Description:\n").append(projectDescription).append("\n\n");
+
+        systemPromptBuilder.append("For each persona, provide the following details with the exact field names and capitalization as shown below:\n\n" +
                 "- Name\n" +
                 "- Age\n" +
                 "- Occupation\n" +
                 "- Interests\n" +
-                "- Goals\n" +
-                "- Pain Points\n" +
-                "Present the personas in JSON format as an array.";
+                "- Salary Range\n" +
+                "- Education\n" +
+                "- About (this section should be a paragraph that describes who the persona is and what they're like)\n" +
+                "- Market Statistics (this should be a paragraph detailing the potential market size and capital depending on the previous criteria)\n\n" +
+                "Present the personas in JSON format as an array, ensuring that all field names are capitalized as shown in the example below:\n\n" +
+                "Example:\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"Name\": \"John Doe\",\n" +
+                "    \"Age\": 30,\n" +
+                "    \"Occupation\": \"Software Engineer\",\n" +
+                "    \"Interests\": [\"Coding\", \"Reading\"],\n" +
+                "    \"Salary Range\": \"70,000 - 100,000 USD\",\n" +
+                "    \"Education\": \"Bachelor's Degree in Computer Science\",\n" +
+                "    \"About\": \"John is a tech enthusiast who loves to code and read...\",\n" +
+                "    \"Market Statistics\": \"There are over a million software engineers...\"\n" +
+                "  }\n" +
+                "]");
+
+        String systemPrompt = systemPromptBuilder.toString();
 
         // Prepare the messages
         JSONArray messagesArray = new JSONArray();
@@ -114,17 +207,9 @@ public class chatgptapi {
         systemMessage.put("content", systemPrompt);
         messagesArray.put(systemMessage);
 
-        // User message
-        String userMessageContent = "Target Audience:\n" + targetAudience + "\n\nProject Description:\n" + projectDescription;
-
-        JSONObject userMessage = new JSONObject();
-        userMessage.put("role", "user");
-        userMessage.put("content", userMessageContent);
-        messagesArray.put(userMessage);
-
         // JSON request body
         JSONObject requestBody = new JSONObject();
-        requestBody.put("model", "gpt-4");
+        requestBody.put("model", "gpt-4o-mini");
         requestBody.put("messages", messagesArray);
 
         // Create HTTP request
@@ -150,6 +235,7 @@ public class chatgptapi {
         return personas;
     }
 
+
     private static List<Persona> parsePersonasFromResponse(String response) {
         List<Persona> personas = new ArrayList<>();
         try {
@@ -157,7 +243,11 @@ public class chatgptapi {
 
             for (int i = 0; i < personasArray.length(); i++) {
                 JSONObject personaJSON = personasArray.getJSONObject(i);
-                Persona persona = Persona.fromJSON(personaJSON);
+
+                // Normalize keys before parsing
+                JSONObject normalizedPersonaJSON = normalizeKeys(personaJSON);
+
+                Persona persona = Persona.fromJSON(normalizedPersonaJSON);
                 personas.add(persona);
             }
         } catch (JSONException e) {
@@ -167,6 +257,7 @@ public class chatgptapi {
         }
         return personas;
     }
+
 
 
 }
