@@ -39,7 +39,7 @@ public class Persona {
     }
 
     public String getOccupation() {
-        return education;
+        return occupation;
     }
 
     public int getAge() {
