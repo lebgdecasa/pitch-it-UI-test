@@ -44,66 +44,58 @@ public class AudienceAnalyzer {
         return assistantReply.trim();
     }
 
-    public static List<DetailedTargetAudience> getDetailedTAList(String targetAudience) throws Exception {
-        // Split the target audience into categories
-        String[] audienceCategories = targetAudience.split(";");
+    public static List<DetailedTargetAudience> getDetailedTAList(String audienceCategory) throws Exception {
+        // Existing code to generate detailedTA
+        // Define the system message
+        String systemMessage = "Provide a detailed analysis of the target audience category \"" + audienceCategory + "\". " +
+                "Structure your response in JSON format with the following fields:\n" +
+                "{\n" +
+                "  \"Name\": \"\",\n" +
+                "  \"DemographicAttributes\": {\n" +
+                "    \"MinAge\": 0,\n" +
+                "    \"MaxAge\": 0,\n" +
+                "    \"Gender\": \"\",\n" +
+                "    \"EducationLevel\": \"\",\n" +
+                "    \"Occupation\": \"\",\n" +
+                "    \"IncomeLevel\": \"\",\n" +
+                "    \"GeographicLocation\": \"\"\n" +
+                "  },\n" +
+                "  \"PsychographicAttributes\": {\n" +
+                "    \"InterestsAndPassions\": [],\n" +
+                "    \"Values\": [],\n" +
+                "    \"PersonalityTraits\": [],\n" +
+                "    \"Lifestyle\": \"\"\n" +
+                "  },\n" +
+                "  \"BehavioralAttributes\": {\n" +
+                "    \"IsEarlyAdopter\": false,\n" +
+                "    \"TechSavviness\": \"\",\n" +
+                "    \"GadgetOwnership\": [],\n" +
+                "    \"MediaConsumption\": [],\n" +
+                "    \"OnlineEngagement\": [],\n" +
+                "    \"IsInfluencer\": false\n" +
+                "  },\n" +
+                "  \"OtherAttributes\": {\n" +
+                "    \"EventParticipation\": [],\n" +
+                "    \"Hobbies\": [],\n" +
+                "    \"BrandAffinity\": [],\n" +
+                "    \"EnvironmentalConcerns\": false,\n" +
+                "    \"GlobalPerspective\": false,\n" +
+                "    \"MultilingualAbilities\": false\n" +
+                "  }\n" +
+                "}";
+
+        // Create messages
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(new ChatMessage("system", systemMessage));
+
+        // Call the API
+        String assistantReply = chatgptapi.getResponse(messages);
+
+        // Parse the assistant's reply into a DetailedTargetAudience object
+        JSONObject json = new JSONObject(assistantReply.trim());
+        DetailedTargetAudience detailedTA = parseDetailedTAFromJSON(json);
         List<DetailedTargetAudience> detailedTAList = new ArrayList<>();
-
-        for (String audience : audienceCategories) {
-            audience = audience.trim();
-            // Skip empty entries
-            if (audience.isEmpty()) continue;
-
-            // Define the system message
-            String systemMessage = "Provide a detailed analysis of the target audience category \"" + audience + "\". " +
-                    "Structure your response in JSON format with the following fields:\n" +
-                    "{\n" +
-                    "  \"Name\": \"\",\n" +
-                    "  \"DemographicAttributes\": {\n" +
-                    "    \"MinAge\": 0,\n" +
-                    "    \"MaxAge\": 0,\n" +
-                    "    \"Gender\": \"\",\n" +
-                    "    \"EducationLevel\": \"\",\n" +
-                    "    \"Occupation\": \"\",\n" +
-                    "    \"IncomeLevel\": \"\",\n" +
-                    "    \"GeographicLocation\": \"\"\n" +
-                    "  },\n" +
-                    "  \"PsychographicAttributes\": {\n" +
-                    "    \"InterestsAndPassions\": [],\n" +
-                    "    \"Values\": [],\n" +
-                    "    \"PersonalityTraits\": [],\n" +
-                    "    \"Lifestyle\": \"\"\n" +
-                    "  },\n" +
-                    "  \"BehavioralAttributes\": {\n" +
-                    "    \"IsEarlyAdopter\": false,\n" +
-                    "    \"TechSavviness\": \"\",\n" +
-                    "    \"GadgetOwnership\": [],\n" +
-                    "    \"MediaConsumption\": [],\n" +
-                    "    \"OnlineEngagement\": [],\n" +
-                    "    \"IsInfluencer\": false\n" +
-                    "  },\n" +
-                    "  \"OtherAttributes\": {\n" +
-                    "    \"EventParticipation\": [],\n" +
-                    "    \"Hobbies\": [],\n" +
-                    "    \"BrandAffinity\": [],\n" +
-                    "    \"EnvironmentalConcerns\": false,\n" +
-                    "    \"GlobalPerspective\": false,\n" +
-                    "    \"MultilingualAbilities\": false\n" +
-                    "  }\n" +
-                    "}";
-
-            // Create messages
-            List<ChatMessage> messages = new ArrayList<>();
-            messages.add(new ChatMessage("system", systemMessage));
-
-            // Call the API
-            String assistantReply = chatgptapi.getResponse(messages);
-
-            // Parse the assistant's reply into a DetailedTargetAudience object
-            JSONObject json = new JSONObject(assistantReply.trim());
-            DetailedTargetAudience detailedTA = parseDetailedTAFromJSON(json);
-            detailedTAList.add(detailedTA);
-        }
+        detailedTAList.add(detailedTA);
 
         return detailedTAList;
     }

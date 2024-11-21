@@ -34,7 +34,7 @@ public class PersonaService {
 
     public static List<Persona> generatePersonas(String targetAudience, String projectDescription, Pitch pitch) throws Exception {
         // Call chatgptapi to generate personas
-        return chatgptapi.generatePersonas(targetAudience, projectDescription);
+        return chatgptapi.generatePersonas(targetAudience, projectDescription, pitch);
     }
 
 }

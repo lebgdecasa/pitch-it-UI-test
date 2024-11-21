@@ -256,50 +256,52 @@ public class ProjectPage extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DetailedTargetAudience detailedTA = pitch.getDetailedTAMap().get(audience.trim());
-
-            // Create and display the DetailedTAPage immediately
-            DetailedTAPage detailedTAPage = new DetailedTAPage(detailedTA);
-            detailedTAPage.setVisible(true);
+            String audienceKey = audience.trim();
+            DetailedTargetAudience detailedTA = pitch.getDetailedTAMap().get(audienceKey);
 
             if (detailedTA != null) {
-                // Data is already available, no need to fetch
-                return;
-            }
+                // DetailedTA is already available
+                DetailedTAPage detailedTAPage = new DetailedTAPage(detailedTA);
+                detailedTAPage.setVisible(true);
+            } else {
+                // DetailedTA is not available, generate it
+                DetailedTAPage detailedTAPage = new DetailedTAPage(null); // Show loading page
+                detailedTAPage.setVisible(true);
 
-            // Fetch data in the background
-            SwingWorker<DetailedTargetAudience, Void> worker = new SwingWorker<>() {
-                @Override
-                protected DetailedTargetAudience doInBackground() throws Exception {
-                    // Fetch the DetailedTargetAudience from the API
-                    List<DetailedTargetAudience> taList = AudienceAnalyzer.getDetailedTAList(audience);
-                    if (!taList.isEmpty()) {
-                        DetailedTargetAudience fetchedTA = taList.get(0);
-                        // Store it in the Pitch's map
-                        pitch.getDetailedTAMap().put(audience.trim(), fetchedTA);
-                        return fetchedTA;
+                // Fetch data in the background
+                SwingWorker<DetailedTargetAudience, Void> worker = new SwingWorker<>() {
+                    @Override
+                    protected DetailedTargetAudience doInBackground() throws Exception {
+                        // Generate detailedTA for the selected audience
+                        List<DetailedTargetAudience> taList = AudienceAnalyzer.getDetailedTAList(audience);
+                        if (!taList.isEmpty()) {
+                            DetailedTargetAudience fetchedTA = taList.get(0);
+                            // Store it in the Pitch's map
+                            pitch.getDetailedTAMap().put(audienceKey, fetchedTA);
+                            return fetchedTA;
+                        }
+                        return null;
                     }
-                    return null;
-                }
 
-                @Override
-                protected void done() {
-                    try {
-                        DetailedTargetAudience fetchedTA = get();
-                        if (fetchedTA != null) {
-                            // Update the DetailedTAPage with the fetched data
-                            detailedTAPage.updateDetailedTA(fetchedTA);
-                        } else {
-                            JOptionPane.showMessageDialog(ProjectPage.this, "Details not available.", "Error", JOptionPane.ERROR_MESSAGE);
+                    @Override
+                    protected void done() {
+                        try {
+                            DetailedTargetAudience fetchedTA = get();
+                            if (fetchedTA != null) {
+                                // Update the DetailedTAPage with the fetched data
+                                detailedTAPage.updateDetailedTA(fetchedTA);
+                            } else {
+                                JOptionPane.showMessageDialog(ProjectPage.this, "Details not available.", "Error", JOptionPane.ERROR_MESSAGE);
+                                detailedTAPage.dispose();
+                            }
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(ProjectPage.this, "Error fetching details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                             detailedTAPage.dispose();
                         }
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(ProjectPage.this, "Error fetching details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                        detailedTAPage.dispose();
                     }
-                }
-            };
-            worker.execute();
+                };
+                worker.execute();
+            }
         }
     }
 }
