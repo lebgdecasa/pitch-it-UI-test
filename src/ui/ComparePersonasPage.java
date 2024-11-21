@@ -198,7 +198,7 @@ public class ComparePersonasPage extends JFrame {
     }
 
     private String fetchPersonaResponse(Persona persona) throws Exception {
-        String systemMessage = "You are " + persona.getName() +  ","+ persona.getAge() + "," + persona.getInterests()+ ". Describe your reaction to the pitch " +
+        String systemMessage = "You are " + persona.getName() +  ","+ persona.getAge() + "," + persona.getInterests()+"," + persona.getOccupation()+"," + persona.getSalaryrange()+ ". Describe your reaction to the pitch " +
                 currentPitch.getName() + ":\n" + currentPitch.getDescription();
         return application.services.chatgptapi.getResponse(List.of(new domain.models.ChatMessage("system", systemMessage)));
     }

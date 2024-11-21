@@ -219,7 +219,7 @@ public class PersonaChatPage extends JFrame {
                     List<ChatMessage> messages = new ArrayList<>();
                     String systemMessageContent = "You are " + persona.getName() + ", a persona with the following characteristics:\n" +
                             "Age: " + persona.getAge() + "\n" +
-                            "Occupation: " + persona.getDescription() + "\n" +
+                            "Occupation: " + persona.getOccupation() + "\n" +
                             "Interests: " + persona.getInterests() + "\n" +
                             "Goals: " + persona.getStats() + "\n" +
                             "Pain Points: " + persona.getAbout() + "\n" +

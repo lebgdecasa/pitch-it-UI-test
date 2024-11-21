@@ -76,6 +76,31 @@ public class chatgptapi {
         return "I'm sorry, I couldn't understand the response.";
     }
 
+    private static JSONObject normalizeKeys(JSONObject jsonObject) {
+        JSONObject normalized = new JSONObject();
+        for (String key : jsonObject.keySet()) {
+            Object value = jsonObject.get(key);
+            String lowerKey = key.toLowerCase().replaceAll("\\s+", "");
+
+            if (value instanceof JSONObject) {
+                value = normalizeKeys((JSONObject) value);
+            } else if (value instanceof JSONArray) {
+                JSONArray array = (JSONArray) value;
+                JSONArray newArray = new JSONArray();
+                for (int i = 0; i < array.length(); i++) {
+                    Object arrayElement = array.get(i);
+                    if (arrayElement instanceof JSONObject) {
+                        arrayElement = normalizeKeys((JSONObject) arrayElement);
+                    }
+                    newArray.put(arrayElement);
+                }
+                value = newArray;
+            }
+            normalized.put(lowerKey, value);
+        }
+        return normalized;
+    }
+
     private static void logApiCall(String input, String output) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE_PATH, true))) {
             writer.write("API Input: " + input);
@@ -97,16 +122,29 @@ public class chatgptapi {
         }
 
         // Construct the system prompt
-        String systemPrompt = "You are a marketing expert. Based on the following target audience and project description, create a persona for each audience category and one extra persona that wouldn't be attracted to the product but the differences should be subtle. For each persona, provide the following details:\n" +
+        String systemPrompt = "You are a marketing expert. Based on the following target audience and project description, create a persona for each audience category and one extra persona that wouldn't be attracted to the product but the differences should be subtle.\n\nFor each persona, provide the following details with the exact field names and capitalization as shown below:\n\n" +
                 "- Name\n" +
                 "- Age\n" +
                 "- Occupation\n" +
                 "- Interests\n" +
-                "- Salary range\n" +
+                "- Salary Range\n" +
                 "- Education\n" +
                 "- About (this section should be a paragraph that describes who the persona is and what they're like)\n" +
-                "- Market Statistics (this should be a paragraph detailing the potential market size and capital depending on the previous criterias)\n" +
-                "Present the personas in JSON format as an array.";
+                "- Market Statistics (this should be a paragraph detailing the potential market size and capital depending on the previous criteria)\n\n" +
+                "Present the personas in JSON format as an array, ensuring that all field names are capitalized as shown in the example below:\n\n" +
+                "Example:\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"Name\": \"John Doe\",\n" +
+                "    \"Age\": 30,\n" +
+                "    \"Occupation\": \"Software Engineer\",\n" +
+                "    \"Interests\": [\"Coding\", \"Reading\"],\n" +
+                "    \"Salary Range\": \"70,000 - 100,000 USD\",\n" +
+                "    \"Education\": \"Bachelor's Degree in Computer Science\",\n" +
+                "    \"About\": \"John is a tech enthusiast who loves to code and read...\",\n" +
+                "    \"Market Statistics\": \"There are over a million software engineers...\"\n" +
+                "  }\n" +
+                "]";
 
         // Prepare the messages
         JSONArray messagesArray = new JSONArray();
@@ -160,7 +198,11 @@ public class chatgptapi {
 
             for (int i = 0; i < personasArray.length(); i++) {
                 JSONObject personaJSON = personasArray.getJSONObject(i);
-                Persona persona = Persona.fromJSON(personaJSON);
+
+                // Normalize keys before parsing
+                JSONObject normalizedPersonaJSON = normalizeKeys(personaJSON);
+
+                Persona persona = Persona.fromJSON(normalizedPersonaJSON);
                 personas.add(persona);
             }
         } catch (JSONException e) {
@@ -170,6 +212,7 @@ public class chatgptapi {
         }
         return personas;
     }
+
 
 
 }

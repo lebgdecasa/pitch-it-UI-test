@@ -72,22 +72,22 @@ public class Persona {
 
     // Static method to create a Persona from JSON
     public static Persona fromJSON(JSONObject jsonObject) throws MalformedURLException {
-        String name = jsonObject.optString("Name", "Unknown");
-        String occupation = jsonObject.optString("Occupation", "N/A");
-        int age = jsonObject.optInt("Age", 25);
-        String education = jsonObject.optString("Education", "Unknown");
-        String salaryrange = jsonObject.optString("Salary range", "N/A");
-        String about = jsonObject.optString("About", "");
-        String stats = jsonObject.optString("Stats", "");
-        String avatarUrl = jsonObject.optString("Avatar URL", null);
+        String name = jsonObject.optString("name", "Unknown");
+        String occupation = jsonObject.optString("occupation", "N/A");
+        int age = jsonObject.optInt("age", 25);
+        String education = jsonObject.optString("education", "Unknown");
+        String salaryRange = jsonObject.optString("salaryrange", "N/A");
+        String about = jsonObject.optString("about", "");
+        String stats = jsonObject.optString("marketstatistics", "");
+        String avatarUrl = jsonObject.optString("avatarurl", null);
         String interests = ""; // Initialize interests
 
-        // Handle "Interests" field
+        // Handle "interests" field
         try {
-            if (jsonObject.has("Interests")) {
-                Object interestsObj = jsonObject.get("Interests");
+            if (jsonObject.has("interests")) {
+                Object interestsObj = jsonObject.get("interests");
                 if (interestsObj instanceof JSONArray) {
-                    JSONArray interestsArray = jsonObject.getJSONArray("Interests");
+                    JSONArray interestsArray = (JSONArray) interestsObj;
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < interestsArray.length(); i++) {
                         sb.append(interestsArray.getString(i));
@@ -97,7 +97,7 @@ public class Persona {
                     }
                     interests = sb.toString();
                 } else if (interestsObj instanceof String) {
-                    interests = jsonObject.getString("Interests");
+                    interests = (String) interestsObj;
                 }
             }
         } catch (JSONException e) {
@@ -112,13 +112,12 @@ public class Persona {
                 avatar = new ImageIcon(new URL(avatarUrl));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-                // Handle invalid URL or set a default avatar
                 avatar = new ImageIcon("default-avatar.png"); // Ensure this path is correct
             }
         } else {
             avatar = new ImageIcon("default-avatar.png"); // Ensure this path is correct
         }
 
-        return new Persona(name, occupation, age, education, salaryrange, about, stats, interests, avatar);
+        return new Persona(name, occupation, age, education, salaryRange, about, stats, interests, avatar);
     }
 }
