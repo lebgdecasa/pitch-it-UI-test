@@ -1,14 +1,15 @@
-// ui/VisionPage.java
 package ui;
 
+import application.services.ImageAnalyzer;
 import application.services.PersonaService;
-import ui.components.Button;
-import ui.components.HamburgerMenu;
 import domain.models.Persona;
 import domain.models.Pitch;
+import ui.components.Button;
+import ui.components.HamburgerMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.Objects;
 
 public class VisionPage extends JFrame {
@@ -106,16 +107,44 @@ public class VisionPage extends JFrame {
         centerPanel.setBackground(Color.WHITE);
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Left: Placeholder for Generated AD
+        // Left: Panel for Generated AD
         JPanel adPanel = new JPanel(new BorderLayout());
         adPanel.setBackground(Color.WHITE);
         adPanel.setBorder(BorderFactory.createTitledBorder("Generated AD"));
 
-        JLabel adPlaceholder = new JLabel("AI-Generated AD Placeholder", SwingConstants.CENTER);
-        adPlaceholder.setFont(new Font("Inter", Font.PLAIN, 16));
-        adPanel.add(adPlaceholder, BorderLayout.CENTER);
-
+        JLabel adLabel = new JLabel("Generating AI-Generated AD...", SwingConstants.CENTER);
+        adLabel.setFont(new Font("Inter", Font.PLAIN, 16));
+        adPanel.add(adLabel, BorderLayout.CENTER);
         centerPanel.add(adPanel);
+
+        // Generate and Display Image
+        SwingWorker<Void, Void> imageWorker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    // Generate and download the image
+                    String userInput = "An ad for " + currentPitch.getName() + " based on persona " + persona.getName();
+                    String filePath = "generated_ad.png"; // Local file to save the image
+                    ImageAnalyzer.generateAndDownloadImage(userInput, filePath);
+
+                    // Load the downloaded image into an ImageIcon
+                    File imageFile = new File(filePath);
+                    if (imageFile.exists()) {
+                        ImageIcon imageIcon = new ImageIcon(filePath);
+                        Image image = imageIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
+                        adLabel.setIcon(new ImageIcon(image));
+                        adLabel.setText(null); // Remove placeholder text
+                    } else {
+                        throw new Exception("Image file not found after download.");
+                    }
+                } catch (Exception e) {
+                    adLabel.setText("Failed to generate the AD. Please try again.");
+                    e.printStackTrace(); // Log the error for debugging
+                }
+                return null;
+            }
+        };
+        imageWorker.execute();
 
         // Right: Chatbox Panel
         JPanel chatPanel = new JPanel(new BorderLayout());
@@ -148,27 +177,11 @@ public class VisionPage extends JFrame {
         // Back Button
         Button backButton = new Button("Back");
         backButton.addActionListener(e -> {
-            // Close the current VisionPage window
             dispose();
-
-            // Navigate to the appropriate page based on the context
             if (isFromPersonaPage) {
-                // Reopen the PersonaPage
-                JFrame personaFrame = new JFrame("Persona Details");
-                personaFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                personaFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                personaFrame.setLocationRelativeTo(null);
-
-                PersonaPage personaPage = new PersonaPage(persona, currentPitch, true);
-                personaFrame.setContentPane(personaPage);
-                personaFrame.setVisible(true);
+                new PersonaPage(persona, currentPitch, true).setVisible(true);
             } else {
-                // Reopen the PersonasListPage
-                PersonasListPage personasListPage = new PersonasListPage(
-                        PersonaService.getInstance().getPersonasForPitch(currentPitch),
-                        currentPitch
-                );
-                personasListPage.setVisible(true);
+                new PersonasListPage(PersonaService.getInstance().getPersonasForPitch(currentPitch), currentPitch).setVisible(true);
             }
         });
         footerPanel.add(backButton);
@@ -176,7 +189,6 @@ public class VisionPage extends JFrame {
         // Regenerate Button
         Button regenerateButton = new Button("Regenerate");
         regenerateButton.addActionListener(e -> {
-            // Open a dialog for regenerating AD
             String userInput = JOptionPane.showInputDialog(
                     this,
                     "Enter modifications for the AD prompt:",
@@ -184,8 +196,21 @@ public class VisionPage extends JFrame {
                     JOptionPane.PLAIN_MESSAGE
             );
             if (userInput != null && !userInput.trim().isEmpty()) {
-                // Placeholder logic for regenerating AD
-                JOptionPane.showMessageDialog(this, "AD regenerated with input: " + userInput);
+                JOptionPane.showMessageDialog(this, "Regenerating AD...");
+                // Trigger regeneration logic
+                new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        try {
+                            String filePath = "regenerated_ad.png";
+                            ImageAnalyzer.generateAndDownloadImage(userInput, filePath);
+                            JOptionPane.showMessageDialog(VisionPage.this, "AD regenerated successfully!");
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(VisionPage.this, "Failed to regenerate AD.");
+                        }
+                        return null;
+                    }
+                }.execute();
             }
         });
         footerPanel.add(regenerateButton);

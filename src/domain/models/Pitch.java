@@ -3,6 +3,7 @@ package domain.models;
 
 import application.services.AudienceAnalyzer;
 import application.services.ImageAnalyzer;
+import ui.VisionPage;
 
 import java.awt.Image;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Pitch {
     public Pitch(String name, String description, Image image) throws Exception {
         this.name = name;
         this.description = description;
-        this.image = ImageAnalyzer.generateImage(name + description);
+        this.image = ImageAnalyzer.generateAndDownloadImage(name + description + VisionPage.persona, "vision" + name + description + VisionPage.persona);
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
         this.detailedTAMap = new HashMap<>();
         this.personas = new ArrayList<>();
