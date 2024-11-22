@@ -92,7 +92,7 @@ public class AudienceAnalyzer {
         String assistantReply = chatgptapi.getResponse(messages);
 
         // Parse the assistant's reply into a DetailedTargetAudience object
-        JSONObject json = new JSONObject(assistantReply.trim());
+        JSONObject json = new JSONObject((assistantReply.substring(7, assistantReply.length()-3)).trim());
         DetailedTargetAudience detailedTA = parseDetailedTAFromJSON(json);
         List<DetailedTargetAudience> detailedTAList = new ArrayList<>();
         detailedTAList.add(detailedTA);
