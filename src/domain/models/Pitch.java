@@ -14,7 +14,7 @@ import java.util.Map;
 public class Pitch {
     private final String name;
     private final String description;
-    private final String image;
+    private final Image image;
     private final String targetAudience;
     private Map<String, DetailedTargetAudience> detailedTAMap;
     private List<Persona> personas;
@@ -24,7 +24,7 @@ public class Pitch {
     public Pitch(String name, String description, Image image) throws Exception {
         this.name = name;
         this.description = description;
-        this.image = ImageAnalyzer.generateAndDownloadImage(name + description + VisionPage.persona, "vision" + name + description + VisionPage.persona);
+        this.image = image;
         this.targetAudience = AudienceAnalyzer.analyzeAudience(name + description);
         this.detailedTAMap = new HashMap<>();
         this.personas = new ArrayList<>();
@@ -47,7 +47,7 @@ public class Pitch {
         return description;
     }
 
-    public String getImage() {
+    public Image getImage() {
         return image;
     }
 
