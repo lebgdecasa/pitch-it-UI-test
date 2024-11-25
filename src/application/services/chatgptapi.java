@@ -11,6 +11,8 @@ import java.net.http.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import domain.models.DetailedTargetAudience;
 import domain.models.Persona;
@@ -173,7 +175,7 @@ public class chatgptapi {
 
         systemPromptBuilder.append("Project Description:\n").append(projectDescription).append("\n\n");
 
-        systemPromptBuilder.append("For each persona, provide the following details with the exact field names and capitalization as shown below:\n\n" +
+        systemPromptBuilder.append("For each persona, provide the following details with the exact field names and capitalization as shown below. Do not include any code block markers or language prefixes in your response.\\n\\n" +
                 "- Name\n" +
                 "- Age\n" +
                 "- Occupation\n" +
@@ -240,7 +242,10 @@ public class chatgptapi {
     private static List<Persona> parsePersonasFromResponse(String response) {
         List<Persona> personas = new ArrayList<>();
         try {
-            JSONArray personasArray = new JSONArray(response);
+            // Extract the JSON content from the response
+            String jsonContent = extractJsonFromResponse(response);
+
+            JSONArray personasArray = new JSONArray(jsonContent);
 
             for (int i = 0; i < personasArray.length(); i++) {
                 JSONObject personaJSON = personasArray.getJSONObject(i);
@@ -259,6 +264,34 @@ public class chatgptapi {
         return personas;
     }
 
+    private static String extractJsonFromResponse(String response) {
+        System.out.println("Assistant's original response:\n" + response);
 
+        // Trim leading/trailing whitespace
+        String trimmedResponse = response.trim();
 
+        // If response starts with a valid JSON structure, return as is
+        if ((trimmedResponse.startsWith("[") && trimmedResponse.endsWith("]")) ||
+                (trimmedResponse.startsWith("{") && trimmedResponse.endsWith("}"))) {
+            return trimmedResponse;
+        }
+
+        // Remove potential code block markers (e.g., ```json)
+        if (trimmedResponse.startsWith("```")) {
+            int startIndex = trimmedResponse.indexOf('\n') + 1; // Start after ``` marker
+            int endIndex = trimmedResponse.lastIndexOf("```");
+            if (startIndex > 0 && endIndex > startIndex) {
+                trimmedResponse = trimmedResponse.substring(startIndex, endIndex).trim();
+            }
+        }
+
+        // Validate JSON again after cleanup
+        if ((trimmedResponse.startsWith("[") && trimmedResponse.endsWith("]")) ||
+                (trimmedResponse.startsWith("{") && trimmedResponse.endsWith("}"))) {
+            return trimmedResponse;
+        }
+
+        // If JSON content cannot be identified, throw an exception
+        throw new JSONException("No JSON content found in the response.");
+    }
 }
