@@ -18,6 +18,9 @@ public class VisionPage extends JFrame {
     private final Pitch currentPitch;
     private final boolean isFromPersonaPage;
 
+    // Make adLabel a class-level variable
+    private JLabel adLabel;
+
     public VisionPage(Persona persona, Pitch pitch, boolean isFromPersonaPage) {
         this.persona = persona;
         this.currentPitch = pitch;
@@ -112,7 +115,8 @@ public class VisionPage extends JFrame {
         adPanel.setBackground(Color.WHITE);
         adPanel.setBorder(BorderFactory.createTitledBorder("Generated AD"));
 
-        JLabel adLabel = new JLabel("Generating AI-Generated AD...", SwingConstants.CENTER);
+        // Use the class-level adLabel
+        adLabel = new JLabel("Generating AI-Generated AD...", SwingConstants.CENTER);
         adLabel.setFont(new Font("Inter", Font.PLAIN, 16));
         adPanel.add(adLabel, BorderLayout.CENTER);
         centerPanel.add(adPanel);
@@ -132,13 +136,17 @@ public class VisionPage extends JFrame {
                     if (imageFile.exists()) {
                         ImageIcon imageIcon = new ImageIcon(filePath);
                         Image image = imageIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
-                        adLabel.setIcon(new ImageIcon(image));
-                        adLabel.setText(null); // Remove placeholder text
+
+                        // Update UI on the Event Dispatch Thread
+                        SwingUtilities.invokeLater(() -> {
+                            adLabel.setIcon(new ImageIcon(image));
+                            adLabel.setText(null); // Remove placeholder text
+                        });
                     } else {
                         throw new Exception("Image file not found after download.");
                     }
                 } catch (Exception e) {
-                    adLabel.setText("Failed to generate the AD. Please try again.");
+                    SwingUtilities.invokeLater(() -> adLabel.setText("Failed to generate the AD. Please try again."));
                     e.printStackTrace(); // Log the error for debugging
                 }
                 return null;
@@ -197,20 +205,41 @@ public class VisionPage extends JFrame {
             );
             if (userInput != null && !userInput.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Regenerating AD...");
+
                 // Trigger regeneration logic
-                new SwingWorker<Void, Void>() {
+                SwingWorker<Void, Void> regenerateWorker = new SwingWorker<>() {
                     @Override
                     protected Void doInBackground() throws Exception {
                         try {
-                            String filePath = "regenerated_ad.png";
+                            String filePath = "regenerated_ad.png"; // File path for regenerated image
                             ImageAnalyzer.generateAndDownloadImage(userInput, filePath);
-                            JOptionPane.showMessageDialog(VisionPage.this, "AD regenerated successfully!");
+
+                            // Update the adLabel with the regenerated image
+                            File imageFile = new File(filePath);
+                            if (imageFile.exists()) {
+                                ImageIcon imageIcon = new ImageIcon(filePath);
+                                Image image = imageIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
+
+                                SwingUtilities.invokeLater(() -> {
+                                    adLabel.setIcon(new ImageIcon(image));
+                                    adLabel.setText(null); // Clear placeholder text
+                                });
+                            } else {
+                                throw new Exception("Image file not found after regeneration.");
+                            }
                         } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(VisionPage.this, "Failed to regenerate AD.");
+                            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                    VisionPage.this,
+                                    "Failed to regenerate AD. Please try again.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            ));
+                            ex.printStackTrace(); // Log error
                         }
                         return null;
                     }
-                }.execute();
+                };
+                regenerateWorker.execute();
             }
         });
         footerPanel.add(regenerateButton);
