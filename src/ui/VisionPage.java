@@ -197,53 +197,49 @@ public class VisionPage extends JFrame {
         // Regenerate Button
         Button regenerateButton = new Button("Regenerate");
         regenerateButton.addActionListener(e -> {
-            String userInput = JOptionPane.showInputDialog(
-                    this,
-                    "Enter modifications for the AD prompt:",
-                    "Regenerate AD",
-                    JOptionPane.PLAIN_MESSAGE
-            );
-            if (userInput != null && !userInput.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Regenerating AD...");
+            JOptionPane.showMessageDialog(this, "Regenerating AD...");
 
-                // Trigger regeneration logic
-                SwingWorker<Void, Void> regenerateWorker = new SwingWorker<>() {
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        try {
-                            String filePath = "regenerated_ad.png"; // File path for regenerated image
-                            ImageAnalyzer.generateAndDownloadImage(userInput, filePath);
+            // Reuse the original prompt for regeneration
+            String originalUserInput = "An ad for " + currentPitch.getName() + " based on persona " + persona.getName();
 
-                            // Update the adLabel with the regenerated image
-                            File imageFile = new File(filePath);
-                            if (imageFile.exists()) {
-                                ImageIcon imageIcon = new ImageIcon(filePath);
-                                Image image = imageIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
+            // Trigger regeneration logic
+            SwingWorker<Void, Void> regenerateWorker = new SwingWorker<>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    try {
+                        String filePath = "regenerated_ad.png"; // File path for regenerated image
+                        ImageAnalyzer.generateAndDownloadImage(originalUserInput, filePath);
 
-                                SwingUtilities.invokeLater(() -> {
-                                    adLabel.setIcon(new ImageIcon(image));
-                                    adLabel.setText(null); // Clear placeholder text
-                                });
-                            } else {
-                                throw new Exception("Image file not found after regeneration.");
-                            }
-                        } catch (Exception ex) {
-                            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                                    VisionPage.this,
-                                    "Failed to regenerate AD. Please try again.",
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE
-                            ));
-                            ex.printStackTrace(); // Log error
+                        // Update the adLabel with the regenerated image
+                        File imageFile = new File(filePath);
+                        if (imageFile.exists()) {
+                            ImageIcon imageIcon = new ImageIcon(filePath);
+                            Image image = imageIcon.getImage().getScaledInstance(400, 400, Image.SCALE_SMOOTH);
+
+                            SwingUtilities.invokeLater(() -> {
+                                adLabel.setIcon(new ImageIcon(image));
+                                adLabel.setText(null); // Clear placeholder text
+                            });
+                        } else {
+                            throw new Exception("Image file not found after regeneration.");
                         }
-                        return null;
+                    } catch (Exception ex) {
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                VisionPage.this,
+                                "Failed to regenerate AD. Please try again.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        ));
+                        ex.printStackTrace(); // Log error
                     }
-                };
-                regenerateWorker.execute();
-            }
+                    return null;
+                }
+            };
+            regenerateWorker.execute();
         });
         footerPanel.add(regenerateButton);
 
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
     }
+
 }
